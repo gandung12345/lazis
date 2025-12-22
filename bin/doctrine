@@ -1,0 +1,39 @@
+#! /usr/bin/env php
+
+<?php
+
+/**
+ * @author Paulus Gandung Prakosa <gandung@infradead.org>
+ */
+
+require __DIR__ . DIRECTORY_SEPARATOR . '../vendor/autoload.php';
+
+use Doctrine\ORM\Tools\Console\ConsoleRunner;
+use Doctrine\ORM\Tools\Console\EntityManagerProvider\SingleManagerProvider;
+use Schnell\Bridge\Cache\CacheBridge;
+use Schnell\Bridge\Doctrine\DoctrineBridge;
+use Schnell\Config\ConfigFactory;
+use Schnell\Container;
+
+$configFactory = new ConfigFactory();
+$configFactory->importBulk([
+    '../config/app.conf',
+    '../config/database.conf',
+    '../config/bridge/cache.conf',
+    '../config/bridge/doctrine.conf'
+]);
+
+$config = $configFactory->getConfig();
+$container = new Container();
+
+$cacheBridge = new CacheBridge($config, $container);
+$cacheBridge->setBasePath(getcwd() . DIRECTORY_SEPARATOR . '..');
+$cacheBridge->load();
+
+$bridge = new DoctrineBridge($config, $container);
+$bridge->setBasePath(getcwd() . DIRECTORY_SEPARATOR . '..');
+$bridge->load();
+
+ConsoleRunner::run(
+    new SingleManagerProvider($container->get('entity-manager'))
+);

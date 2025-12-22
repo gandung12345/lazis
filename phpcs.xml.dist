@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<ruleset name="Schnell coding standard">
+    <description>Schnell coding standard</description>
+
+    <!-- display progress -->
+    <arg value="p"/>
+    <!-- use colors in output -->
+    <arg name="colors"/>
+
+    <!-- inherit rules from: -->
+    <rule ref="PSR12"/>
+    <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
+
+    <!-- Paths to check -->
+    <file>index.php</file>
+    <file>app</file>
+    <file>functions</file>
+    <file>src</file>
+    <file>tests</file>
+</ruleset>
