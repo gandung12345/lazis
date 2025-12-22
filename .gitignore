@@ -1,0 +1,16 @@
+foobar/
+vendor/
+bin/var/
+var/doctrine/
+var/doctrine-proxy/
+var/cache/
+var/routes
+.phpunit.result.cache
+phpcs.phar
+phpcbf.phar
+composer.lock
+app/Entity/.DS_Store
+var/.DS_Store
+app/Repository/.DS_Store
+src/Http/.DS_Store
+src/Bridge/Doctrine/Type/.DS_Store
