@@ -9,6 +9,7 @@ use Doctrine\ORM\Query\Expr;
 use Lazis\Api\Entity\Amil;
 use Lazis\Api\Entity\Dashboard;
 use Lazis\Api\Entity\Donee;
+use Lazis\Api\Entity\DoneeCategoricalPercentage;
 use Lazis\Api\Entity\Donor;
 use Lazis\Api\Entity\NuCoinStatistics;
 use Lazis\Api\Entity\NuCoinAggregatorStatistics;
@@ -17,6 +18,7 @@ use Lazis\Api\Entity\Organizer;
 use Lazis\Api\Entity\Transaction;
 use Lazis\Api\Entity\Volunteer;
 use Lazis\Api\Entity\Wallet;
+use Lazis\Api\Type\Donee as DoneeType;
 use Lazis\Api\Type\Transaction as TransactionType;
 use Lazis\Api\Type\Wallet as WalletType;
 use Schnell\Decorator\Stringified\DateTimeDecorator;
@@ -49,6 +51,7 @@ class DashboardRepository extends AbstractRepository
         $dashboard->setAllWalletFunds($this->getAllWalletFunds($schema));
 
         $this->getNuCoinStatistics($schema, $dashboard);
+        $this->getDoneeCategoricalPercentage($schema, $dashboard);
 
         return $dashboard;
     }
@@ -441,5 +444,111 @@ class DashboardRepository extends AbstractRepository
         }
 
         return $entity;
+    }
+
+    /**
+     * @internal
+     * 
+     * @param \Schnell\Schema\SchemaInterface $schema
+     * @param \Schnell\Entity\EntityInterface &$entity
+     * @return void
+     */
+    private function getDoneeCategoricalPercentage(SchemaInterface $schema, EntityInterface &$entity): void
+    {
+        $categories = [
+            DoneeType::POOR,
+            DoneeType::ORPHAN,
+            DoneeType::QURAN_TEACHER,
+            DoneeType::DISABILITY,
+            DoneeType::OTHER
+        ];
+
+        $doneeTotalCount = $this->getDoneeCount($schema);
+        $doneeCategoricalPercentage = new DoneeCategoricalPercentage();
+
+        foreach ($categories as $category) {
+            $this->getDoneeCategoricalPercentageByCategory(
+                $schema,
+                $doneeCategoricalPercentage,
+                $doneeTotalCount,
+                $category
+            );
+        }
+
+        $entity->setDoneeCategoricalPercentage($doneeCategoricalPercentage);
+    }
+
+    /**
+     * @internal
+     * 
+     * @param \Schnell\Schema\SchemaInterface $schema
+     * @param \Schnell\Entity\EntityInterface &$entity
+     * @param int $doneeTotalCount
+     * @param int $category
+     * @return void
+     */
+    private function getDoneeCategoricalPercentageByCategory(
+        SchemaInterface $schema,
+        EntityInterface &$entity,
+        int $doneeTotalCount,
+        int $category
+    ): void {
+        $entities = [new Organization(), new Donee()];
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+        $result = $queryBuilder
+            ->select(
+                sprintf(
+                    'count(%s)',
+                    $entities[1]->getQueryBuilderAlias()
+                )
+            )
+            ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
+            ->join(
+                $entities[1]->getDqlName(),
+                $entities[1]->getQueryBuilderAlias(),
+                Expr\Join::WITH,
+                sprintf(
+                    '%s.id = %s.organization',
+                    $entities[0]->getQueryBuilderAlias(),
+                    $entities[1]->getQueryBuilderAlias()
+                )
+            )
+            ->where($queryBuilder->expr()->andX(
+                $queryBuilder->expr()->eq(
+                    sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
+                    '?1'
+                ),
+                $queryBuilder->expr()->eq(
+                    sprintf('%s.category', $entities[1]->getQueryBuilderAlias()),
+                    '?2'
+                )
+            ))
+            ->setParameter(1, $schema->getOrganizationId())
+            ->setParameter(2, $category)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $percentage = $doneeTotalCount === 0 ? 0.0 : round($result / $doneeTotalCount, 1);
+
+        switch ($category) {
+            case DoneeType::POOR:
+                $entity->setPoor($percentage);
+                break;
+            case DoneeType::ORPHAN:
+                $entity->setOrphan($percentage);
+                break;
+            case DoneeType::QURAN_TEACHER:
+                $entity->setQuranTeacher($percentage);
+                break;
+            case DoneeType::DISABILITY:
+                $entity->setDisability($percentage);
+                break;
+            case DoneeType::OTHER:
+                $entity->setOther($percentage);
+                break;
+        }
+
+        return;
     }
 }
