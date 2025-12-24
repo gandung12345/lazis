@@ -7,6 +7,7 @@ namespace Lazis\Api\Entity;
 use RuntimeException;
 use Schnell\Attribute\Schema\Json;
 use Schnell\Entity\AbstractEntity;
+use Schnell\Entity\EntityInterface;
 
 /**
  * @author Paulus Gandung Prakosa <gandung@infradead.org>
@@ -36,6 +37,9 @@ class Dashboard extends AbstractEntity
 
     #[Json(name: 'nuCoinAggregatorYearlyStatistics')]
     private array $nuCoinAggregatorYearlyStatistics;
+
+    #[Json(name: 'doneeCategoricalPercentage')]
+    private EntityInterface $doneeCategoricalPercentage;
 
     /**
      * @return int
@@ -189,6 +193,23 @@ class Dashboard extends AbstractEntity
     public function addNuCoinAggregatorYearlyStatistics(EntityInterface $entity): void
     {
         $this->nuCoinAggregatorYearlyStatistics[] = $entity;
+    }
+
+    /**
+     * @return \Schnell\Entity\EntityInterface $entity
+     */
+    public function getDoneeCategoricalPercentage(): EntityInterface
+    {
+        return $this->doneeCategoricalPercentage;
+    }
+
+    /**
+     * @param \Schnell\Entity\EntityInterface $doneeCategoricalPercentage
+     * @return void
+     */
+    public function setDoneeCategoricalPercentage(EntityInterface $doneeCategoricalPercentage): void
+    {
+        $this->doneeCategoricalPercentage = $doneeCategoricalPercentage;
     }
 
     /**
