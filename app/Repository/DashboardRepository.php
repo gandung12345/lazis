@@ -463,14 +463,12 @@ class DashboardRepository extends AbstractRepository
             DoneeType::OTHER
         ];
 
-        $doneeTotalCount = $this->getDoneeCount($schema);
         $doneeCategoricalPercentage = new DoneeCategoricalPercentage();
 
         foreach ($categories as $category) {
             $this->getDoneeCategoricalPercentageByCategory(
                 $schema,
                 $doneeCategoricalPercentage,
-                $doneeTotalCount,
                 $category
             );
         }
@@ -483,14 +481,12 @@ class DashboardRepository extends AbstractRepository
      * 
      * @param \Schnell\Schema\SchemaInterface $schema
      * @param \Schnell\Entity\EntityInterface &$entity
-     * @param int $doneeTotalCount
      * @param int $category
      * @return void
      */
     private function getDoneeCategoricalPercentageByCategory(
         SchemaInterface $schema,
         EntityInterface &$entity,
-        int $doneeTotalCount,
         int $category
     ): void {
         $entities = [new Organization(), new Donee()];
@@ -529,23 +525,21 @@ class DashboardRepository extends AbstractRepository
             ->getQuery()
             ->getSingleScalarResult();
 
-        $percentage = $doneeTotalCount === 0 ? 0.0 : round($result / $doneeTotalCount, 1);
-
         switch ($category) {
             case DoneeType::POOR:
-                $entity->setPoor($percentage);
+                $entity->setPoor($result);
                 break;
             case DoneeType::ORPHAN:
-                $entity->setOrphan($percentage);
+                $entity->setOrphan($result);
                 break;
             case DoneeType::QURAN_TEACHER:
-                $entity->setQuranTeacher($percentage);
+                $entity->setQuranTeacher($result);
                 break;
             case DoneeType::DISABILITY:
-                $entity->setDisability($percentage);
+                $entity->setDisability($result);
                 break;
             case DoneeType::OTHER:
-                $entity->setOther($percentage);
+                $entity->setOther($result);
                 break;
         }
 
