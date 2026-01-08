@@ -70,4 +70,9 @@ abstract class AbstractRepositoryStrategy implements RepositoryStrategyInterface
      * {@inheritDoc}
      */
     abstract public function invoke(SchemaInterface $schema): EntityInterface;
+
+    /**
+     * {@inheritDoc}
+     */
+    abstract public function repositoryStrategyId(): string;
 }

@@ -448,7 +448,7 @@ class DashboardRepository extends AbstractRepository
 
     /**
      * @internal
-     * 
+     *
      * @param \Schnell\Schema\SchemaInterface $schema
      * @param \Schnell\Entity\EntityInterface &$entity
      * @return void
@@ -478,7 +478,7 @@ class DashboardRepository extends AbstractRepository
 
     /**
      * @internal
-     * 
+     *
      * @param \Schnell\Schema\SchemaInterface $schema
      * @param \Schnell\Entity\EntityInterface &$entity
      * @param int $category

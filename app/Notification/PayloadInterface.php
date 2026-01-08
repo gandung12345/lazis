@@ -9,4 +9,5 @@ namespace Lazis\Api\Notification;
  */
 interface PayloadInterface
 {
+    public function serialize(): array;
 }

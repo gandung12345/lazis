@@ -920,10 +920,11 @@ final class Lexer implements LexerInterface
             $this->incrementCols();
             $this->persist();
 
-            if (
+            /*if (
                 ($this->isNewline() || $this->isComma()) &&
                 ($this->backtrack(1) !== $this->getStrstart())
             ) {
+                var_dump($this->backtrack(1));
                 throw new ConfigLexerException(
                     sprintf(
                         "Line %d, column %d: unterminated string literal.",
@@ -931,7 +932,7 @@ final class Lexer implements LexerInterface
                         $this->getCols() - 1
                     )
                 );
-            }
+            }*/
 
             if (
                 $this->current() === $this->getStrstart() &&

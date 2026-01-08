@@ -57,4 +57,12 @@ class NuCoinCrossOutgoingTransactionRepositoryStrategy extends AbstractRepositor
 
         return $outgoingStrategyObject->transfer($schema);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function repositoryStrategyId(): string
+    {
+        return 'nu-coin-outgoing-transaction';
+    }
 }

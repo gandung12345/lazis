@@ -17,4 +17,9 @@ interface RepositoryStrategyInterface extends ConcreteRepositoryStrategyAwareInt
      * @return \Schnell\Entity\EntityInterface
      */
     public function invoke(SchemaInterface $schema): EntityInterface;
+
+    /**
+     * @return string
+     */
+    public function repositoryStrategyId(): string;
 }
