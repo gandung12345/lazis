@@ -77,7 +77,7 @@ class NuCoinCrossTransactionController extends BaseController
             $this->getConfig()->get('duta-whatsapp.apiKey'),
             $source->getPhoneNumber(),
             $destination->getPhoneNumber(),
-            $this->getNotificationMessage($repository)
+            $this->getNotificationMessage($transferState, $repository)
         );
 
         $notifierStrategy = new NotifierStrategy();
@@ -89,11 +89,14 @@ class NuCoinCrossTransactionController extends BaseController
     }
 
     /**
+     * @param \Schnell\Entity\EntityInterface $entity
      * @param \Schnell\Repository\RepositoryInterface $repository
      * @return string
      */
-    private function getNotificationMessage(RepositoryInterface $repository): string
-    {
+    private function getNotificationMessage(
+        EntityInterface $entity,
+        RepositoryInterface $repository
+    ): string {
         $result = null;
         $repositoryStrategyId = $repository
             ->getRepositoryStrategyInvocator()
@@ -136,6 +139,10 @@ class NuCoinCrossTransactionController extends BaseController
 
                 break;
         }
+
+        $result = str_replace('<sourceName>', $entity->getSourceName(), $result);
+        $result = str_replace('<destinationName>', $entity->getDestinationName(), $result);
+        $result = str_replace('<amount>', $entity->getAmount());
 
         return $result;
     }
