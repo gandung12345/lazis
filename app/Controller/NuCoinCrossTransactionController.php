@@ -16,6 +16,7 @@ use Lazis\Api\Type\NuCoinCrossTransactionOutgoingStrategy as NuCoinCrossTransact
 use Psr\Http\Message\RequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 use Schnell\Attribute\Route;
+use Schnell\Entity\EntityInterface;
 use Schnell\Hydrator\MapHydrator;
 use Schnell\Repository\RepositoryInterface;
 use Schnell\Validator\Validator;
@@ -73,10 +74,22 @@ class NuCoinCrossTransactionController extends BaseController
         $source = $organizationRepository->getById($transferState->getSourceId());
         $destination = $organizationRepository->getById($transferState->getDestinationId());
 
+        $sourcePhoneNumber = strpos($source->getPhoneNumber(), '0') === 0
+            ? '62' . substr($source->getPhoneNumber(), 1)
+            : (strpos($source->getPhoneNumber(), '+62') === 0
+                ? '62' . substr($source->getPhoneNumber(), 1)
+                : false);
+
+        $destinationPhoneNumber = strpos($destination->getPhoneNumber(), '0') === 0
+            ? '62' . substr($destination->getPhoneNumber(), 1)
+            : (strpos($destination->getPhoneNumber(), '+62') === 0
+                ? '62' . substr($destination->getPhoneNumber(), 3)
+                : false);
+
         $payload = new DutaWhatsappPayload(
             $this->getConfig()->get('duta-whatsapp.apiKey'),
-            $source->getPhoneNumber(),
-            $destination->getPhoneNumber(),
+            $sourcePhoneNumber,
+            $destinationPhoneNumber,
             $this->getNotificationMessage($transferState, $repository)
         );
 
@@ -142,7 +155,7 @@ class NuCoinCrossTransactionController extends BaseController
 
         $result = str_replace('<sourceName>', $entity->getSourceName(), $result);
         $result = str_replace('<destinationName>', $entity->getDestinationName(), $result);
-        $result = str_replace('<amount>', $entity->getAmount());
+        $result = str_replace('<amount>', strval($entity->getAmount()), $result);
 
         return $result;
     }
