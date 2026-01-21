@@ -9,8 +9,10 @@ use Lazis\Api\Notification\Notifier\DutaWhatsappNotifier;
 use Lazis\Api\Notification\Payload\DutaWhatsappPayload;
 use Lazis\Api\Repository\NuCoinCrossTransactionRepository;
 use Lazis\Api\Repository\OrganizationRepository;
+use Lazis\Api\Repository\DutaWhatsappRepository;
 use Lazis\Api\Repository\Strategy\RepositoryStrategyInvocator;
 use Lazis\Api\Schema\NuCoinCrossOrganizationTransferSchema;
+use Lazis\Api\Sdk\SdkFactory;
 use Lazis\Api\Type\NuCoinCrossTransactionIncomingStrategy as NuCoinCrossTransactionIncomingStrategyType;
 use Lazis\Api\Type\NuCoinCrossTransactionOutgoingStrategy as NuCoinCrossTransactionOutgoingStrategyType;
 use Psr\Http\Message\RequestInterface as Request;
@@ -71,13 +73,29 @@ class NuCoinCrossTransactionController extends BaseController
             $request
         );
 
+        $dutaWhatsappRepository = new DutaWhatsappRepository(
+            $this->getContainer()->get('mapper'),
+            $request
+        );
+
+        $gatewayConfig = $dutaWhatsappRepository->getLatest();
+
+        if (null === $gatewayConfig) {
+            $builder = new ResponseBuilder();
+            $builder = $builder
+                ->withPair('code', HttpCode::INTERNAL_SERVER_ERROR)
+                ->withPair('message', 'NU coin cross transaction has been performed, but failed to notify the destination');
+
+            return $this->json($response, $builder->build(), HttpCode::INTERNAL_SERVER_ERROR);
+        }
+
         $source = $organizationRepository->getById($transferState->getSourceId());
         $destination = $organizationRepository->getById($transferState->getDestinationId());
 
         $sourcePhoneNumber = strpos($source->getPhoneNumber(), '0') === 0
             ? '62' . substr($source->getPhoneNumber(), 1)
             : (strpos($source->getPhoneNumber(), '+62') === 0
-                ? '62' . substr($source->getPhoneNumber(), 1)
+                ? '62' . substr($source->getPhoneNumber(), 3)
                 : false);
 
         $destinationPhoneNumber = strpos($destination->getPhoneNumber(), '0') === 0
@@ -87,15 +105,17 @@ class NuCoinCrossTransactionController extends BaseController
                 : false);
 
         $payload = new DutaWhatsappPayload(
-            $this->getConfig()->get('duta-whatsapp.apiKey'),
+            $gatewayConfig->getApiKey(),
             $sourcePhoneNumber,
             $destinationPhoneNumber,
             $this->getNotificationMessage($transferState, $repository)
         );
 
+        $factory = SdkFactory::create();
+        $gateway = $factory->getDutaWhatsapp($gatewayConfig->getUrl());
+
         $notifierStrategy = new NotifierStrategy();
-        $notifierStrategy->setConfig($this->getConfig());
-        $notifierStrategy->setNotifier(new DutaWhatsappNotifier($this->getConfig()));
+        $notifierStrategy->setNotifier(new DutaWhatsappNotifier($gateway));
         $notifierStrategy->notify($payload);
 
         return $this->json($response, MapHydrator::create()->hydrate($transferState));

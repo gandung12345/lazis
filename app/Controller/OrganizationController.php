@@ -13,6 +13,7 @@ use Lazis\Api\Repository\AmilFundingUsageRepository;
 use Lazis\Api\Repository\AssetRecordingRepository;
 use Lazis\Api\Repository\BankAccountRepository;
 use Lazis\Api\Repository\DoneeRepository;
+use Lazis\Api\Repository\DutaWhatsappRepository;
 use Lazis\Api\Repository\InfaqDistributionRepository;
 use Lazis\Api\Repository\LegalRepository;
 use Lazis\Api\Repository\MosqueRepository;
@@ -40,6 +41,8 @@ use Lazis\Api\Schema\OrganizerSchema;
 use Lazis\Api\Schema\TransactionSchema;
 use Lazis\Api\Schema\VolunteerSchema;
 use Lazis\Api\Schema\WalletSchema;
+use Lazis\Api\Sdk\SdkFactory;
+use Lazis\Api\Sdk\DutaWhatsapp\Payload\CreateDevice as CreateDevicePayload;
 use Lazis\Api\Type\Role as RoleType;
 use OpenApi\Attributes as OpenApi;
 use Schnell\Attribute\Route;
@@ -126,11 +129,30 @@ class OrganizationController extends BaseController
             $request
         );
 
-        return $this->json(
-            $response,
-            $repository->create($schema),
-            HttpCode::CREATED
-        );
+        $hydratedEntity = $repository->create($schema);
+
+        // add logic to register phone number to gateway
+        $result = $this->registerNumberToGateway($request, $hydratedEntity['phoneNumber']);
+
+        if (null === $result) {
+            $builder = new ResponseBuilder();
+            $builder = $builder
+                ->withPair('code', HttpCode::INTERNAL_SERVER_ERROR)
+                ->withPair('message', 'Invalid whatsapp gateway configuration.');
+
+            return $this->json($response, $builder->build(), HttpCode::INTERNAL_SERVER_ERROR);
+        }
+
+        if ($result->getStatusCode() !== 200) {
+            $builder = new ResponseBuilder();
+            $builder = $builder
+                ->withPair('code', $result->getStatusCode())
+                ->withPair('message', $result->getReasonPhrase());
+
+            return $this->json($response, $builder->build(), $result->getStatusCode());
+        }
+
+        return $this->json($response, $hydratedEntity, HttpCode::CREATED);
     }
 
     /**
@@ -477,6 +499,44 @@ class OrganizationController extends BaseController
         }
 
         return $this->json($response, $entity, HttpCode::CREATED);
+    }
+
+    private function registerNumberToGateway(Request $request, string $phoneNumber): Response
+    {
+        $dutaWhatsappRepository = new DutaWhatsappRepository(
+            $this->getContainer()->get('mapper'),
+            $request
+        );
+
+        $gatewayConfig = $dutaWhatsappRepository->getLatest();
+
+        if (null === $gatewayConfig) {
+            return null;
+        }
+
+        $sdkFactory = SdkFactory::create();
+        $dutaWhatsappGateway = $sdkFactory->getDutaWhatsapp($gatewayConfig->getUrl());
+
+        $createDevice = new CreateDevicePayload(
+            $gatewayConfig->getApiKey(),
+            $this->normalizePhoneNumber($phoneNumber),
+            ''
+        );
+
+        return $dutaWhatsappGateway->createDevice($createDevice);
+    }
+
+    private function normalizePhoneNumber(string $phoneNumber): string|bool
+    {
+        if (strpos($phoneNumber, '0') === 0) {
+            return '62' . substr($phoneNumber, 1);
+        }
+
+        if (strpos($phoneNumber, '+62') === 0) {
+            return '62' . substr($phoneNumber, 3);
+        }
+
+        return false;
     }
 
     /**

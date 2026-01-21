@@ -4,67 +4,30 @@ declare(strict_types=1);
 
 namespace Lazis\Api\Notification;
 
-use GuzzleHttp\ClientInterface;
-use Schnell\Config\ConfigInterface;
+use Lazis\Api\Sdk\SdkInterface;
 
 /**
  * @author Paulus Gandung Prakosa <gandung@infradead.org>
  */
 abstract class AbstractNotifier implements NotifierInterface
 {
-    /**
-     * @var \Schnell\Config\ConfigInterface
-     */
-    private ConfigInterface $config;
+    private SdkInterface $sdk;
 
     /**
-     * @var \GuzzleHttp\ClientInterface
+     * @param \Lazis\Api\Sdk\SdkInterface $sdk
      */
-    private ClientInterface $httpClient;
-
-    /**
-     * @param \Schnell\Config\ConfigInterface $config
-     */
-    public function __construct(ConfigInterface $config)
+    public function __construct(SdkInterface $sdk)
     {
-        $this->setConfig($config);
-        $this->initializeHttpClient();
+        $this->setSdk($sdk);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getConfig(): ConfigInterface
+    public function getSdk(): SdkInterface
     {
-        return $this->config;
+        return $this->sdk;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function setConfig(ConfigInterface $config): void
+    public function setSdk(SdkInterface $sdk): void
     {
-        $this->config = $config;
+        $this->sdk = $sdk;
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getHttpClient(): ClientInterface
-    {
-        return $this->httpClient;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function setHttpClient(ClientInterface $httpClient): void
-    {
-        $this->httpClient = $httpClient;
-    }
-
-    /**
-     * @return void
-     */
-    abstract public function initializeHttpClient(): void;
 }

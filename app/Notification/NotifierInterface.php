@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Lazis\Api\Notification;
 
-use GuzzleHttp\ClientInterface;
-use Schnell\Config\ConfigInterface;
+use Lazis\Api\Sdk\SdkInterface;
 
 /**
  * @author Paulus Gandung Prakosa <gandung@infradead.org>
@@ -13,24 +12,13 @@ use Schnell\Config\ConfigInterface;
 interface NotifierInterface
 {
     /**
-     * @return \Schnell\Config\ConfigInterface
+     * @return \Lazis\Api\Sdk\SdkInterface
      */
-    public function getConfig(): ConfigInterface;
+    public function getSdk(): SdkInterface;
 
     /**
-     * @param \Schnell\Config\ConfigInterface $config
+     * @param \Lazis\Api\Sdk\SdkInterface $sdk
      * @return void
      */
-    public function setConfig(ConfigInterface $config): void;
-
-    /**
-     * @return \GuzzleHttp\ClientInterface
-     */
-    public function getHttpClient(): ClientInterface;
-
-    /**
-     * @param \GuzzleHttp\ClientInterface $httpClient
-     * @return void
-     */
-    public function setHttpClient(ClientInterface $httpClient): void;
+    public function setSdk(SdkInterface $sdk): void;
 }

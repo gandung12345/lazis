@@ -2,34 +2,32 @@
 
 declare(strict_types=1);
 
-namespace Lazis\Api\Notification\Payload;
+namespace Lazis\Api\Sdk\DutaWhatsapp\Payload;
 
-use Lazis\Api\Notification\PayloadInterface;
-use Lazis\Api\Sdk\PayloadInterface as SdkPayloadInterface;
-use Lazis\Api\Sdk\DutaWhatsapp\Payload\SendMessage;
+use Lazis\Api\Sdk\PayloadInterface;
 
 /**
  * @author Paulus Gandung Prakosa <gandung@infradead.org>
  */
-class DutaWhatsappPayload implements PayloadInterface
+class SendMessage implements PayloadInterface
 {
     private string $apiKey;
 
     private string $sender;
 
-    private string $receiver;
+    private string $number;
 
     private string $message;
 
     public function __construct(
         string $apiKey,
         string $sender,
-        string $receiver,
+        string $number,
         string $message
     ) {
         $this->setApiKey($apiKey);
         $this->setSender($sender);
-        $this->setReceiver($receiver);
+        $this->setNumber($number);
         $this->setMessage($message);
     }
 
@@ -53,14 +51,14 @@ class DutaWhatsappPayload implements PayloadInterface
         $this->sender = $sender;
     }
 
-    public function getReceiver(): string
+    public function getNumber(): string
     {
-        return $this->receiver;
+        return $this->number;
     }
 
-    public function setReceiver(string $receiver): void
+    public function setNumber(string $number): void
     {
-        $this->receiver = $receiver;
+        $this->number = $number;
     }
 
     public function getMessage(): string
@@ -76,13 +74,13 @@ class DutaWhatsappPayload implements PayloadInterface
     /**
      * {@inheritDoc}
      */
-    public function export(): SdkPayloadInterface
+    public function export(): array
     {
-        return new SendMessage(
-            $this->getApiKey(),
-            $this->getSender(),
-            $this->getReceiver(),
-            $this->getMessage()
-        );
+        return [
+            'api_key' => $this->getApiKey(),
+            'sender' => $this->getSender(),
+            'number' => $this->getNumber(),
+            'message' => $this->getMessage()
+        ];
     }
 }
