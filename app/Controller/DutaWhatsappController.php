@@ -10,6 +10,7 @@ use Lazis\Api\Repository\DutaWhatsappRepository;
 use Lazis\Api\Schema\DutaWhatsappSchema;
 use Schnell\Attribute\Route;
 use Schnell\Http\Code as HttpCode;
+use Schnell\Paginator\Paginator;
 use Schnell\Validator\Validator;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\RequestInterface as Request;
