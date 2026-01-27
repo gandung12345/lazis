@@ -286,6 +286,69 @@ class AmilController extends BaseController
             return $this->json($response, $builder->build(), HttpCode::NOT_FOUND);
         }
 
+        $dutaWhatsappRepository = new DutaWhatsappRepository(
+            $this->getContainer()->get('mapper'),
+            $request
+        );
+
+        $gatewayConfig = $dutaWhatsappRepository->getLatest();
+
+        if (null === $gatewayConfig) {
+            $builder = new ResponseBuilder();
+            $builder = $builder
+                ->withPair('code', HttpCode::INTERNAL_SERVER_ERROR)
+                ->withPair('message', 'Amil funding transaction has been performed, but failed to notify the destination');
+
+            return $this->json($response, $builder->build(), HttpCode::INTERNAL_SERVER_ERROR);
+        }
+
+        $amilRepository = new AmilRepository(
+            $this->getContainer()->get('mapper'),
+            $request
+        );
+
+        $organization = $amilRepository->getOrganization($args['aid']);
+
+        if (null === $organization) {
+            $builder = new ResponseBuilder();
+            $builder = $builder
+                ->withPair('code', HttpCode::NOT_FOUND)
+                ->withPair('message', sprintf('Organization from amil with id %s not found.', $args['aid']));
+
+            return $this->json($response, $builder->build(), HttpCode::NOT_FOUND);
+        }
+
+        $sourcePhoneNumber = strpos($organization->getPhoneNumber(), '0') === 0
+            ? '62' . substr($organization->getPhoneNumber(), 1)
+            : (strpos($organization->getPhoneNumber(), '+62') === 0
+                ? '62' . substr($organization->getPhoneNumber(), 3)
+                : false);
+
+        $destinationPhoneNumber = strpos($schema->getPhoneNumber(), '0') === 0
+            ? '62' . substr($schema->getPhoneNumber(), 1)
+            : (strpos($schema->getPhoneNumber(), '+62') === 0
+                ? '62' . substr($schema->getPhoneNumber(), 3)
+                : false);
+
+        $message = $this->getConfig()
+            ->get('amil-funding-template-message.amil-funding');
+        $message = str_replace('<amilFundingDoer>', $schema->getName(), $message);
+        $message = str_replace('<amount>', strval($schema->getAmount()), $message);
+
+        $payload = new DutaWhatsappPayload(
+            $gatewayConfig->getApiKey(),
+            $sourcePhoneNumber,
+            $destinationPhoneNumber,
+            $message
+        );
+
+        $factory = SdkFactory::create();
+        $gateway = $factory->getDutaWhatsapp($gatewayConfig->getUrl());
+
+        $notifierStrategy = new NotifierStrategy();
+        $notifierStrategy->setNotifier(new DutaWhatsappNotifier($gateway));
+        $notifierStrategy->notify($payload);
+
         return $this->json($response, $entity, HttpCode::CREATED);
     }
 
@@ -392,6 +455,69 @@ class AmilController extends BaseController
             return $this->json($response, $builder->build(), HttpCode::NOT_FOUND);
         }
 
+        $dutaWhatsappRepository = new DutaWhatsappRepository(
+            $this->getContainer()->get('mapper'),
+            $request
+        );
+
+        $gatewayConfig = $dutaWhatsappRepository->getLatest();
+
+        if (null === $gatewayConfig) {
+            $builder = new ResponseBuilder();
+            $builder = $builder
+                ->withPair('code', HttpCode::INTERNAL_SERVER_ERROR)
+                ->withPair('message', 'Infaq transaction has been performed, but failed to notify the destination.');
+
+            return $this->json($response, $builder->build(), HttpCode::INTERNAL_SERVER_ERROR);
+        }
+
+        $amilRepository = new AmilRepository(
+            $this->getContainer()->get('mapper'),
+            $request
+        );
+
+        $organization = $amilRepository->getOrganization($args['aid']);
+
+        if (null === $organization) {
+            $builder = new ResponseBuilder();
+            $builder = $builder
+                ->withPair('code', HttpCode::NOT_FOUND)
+                ->withPair('message', sprintf('Organization from amil with id %s not found', $args['aid']));
+
+            return $this->json($response, $builder->build(), HttpCode::NOT_FOUND);
+        }
+
+        $sourcePhoneNumber = strpos($organization->getPhoneNumber(), '0') === 0
+            ? '62' . substr($organization->getPhoneNumber(), 1)
+            : (strpos($organization->getPhoneNumber(), '+62') === 0
+                ? '62' . substr($organization->getPhoneNumber(), 3)
+                : false);
+
+        $destinationPhoneNumber = strpos($schema->getPhoneNumber(), '0') === 0
+            ? '62' . substr($schema->getPhoneNumber(), 1)
+            : (strpos($schema->getPhoneNumber(), '+62') === 0
+                ? '62' . substr($schema->getPhoneNumber(), 3)
+                : false);
+
+        $message = $this->getConfig()
+            ->get('infaq-template-message.infaq');
+        $message = str_replace('<infaqDoer>', $schema->getName(), $message);
+        $message = str_replace('<amount>', strval($schema->getAmount()), $message);
+
+        $payload = new DutaWhatsappPayload(
+            $gatewayConfig->getApiKey(),
+            $sourcePhoneNumber,
+            $destinationPhoneNumber,
+            $message
+        );
+
+        $factory = SdkFactory::create();
+        $gateway = $factory->getDutaWhatsapp($gatewayConfig->getUrl());
+
+        $notifierStrategy = new NotifierStrategy();
+        $notifierStrategy->setNotifier(new DutaWhatsappNotifier($gateway));
+        $notifierStrategy->notify($payload);
+
         return $this->json($response, $entity, HttpCode::CREATED);
     }
 
@@ -486,7 +612,7 @@ class AmilController extends BaseController
         $destinationPhoneNumber = strpos($schema->getPhoneNumber(), '0') === 0
             ? '62' . substr($schema->getPhoneNumber(), 1)
             : (strpos($schema->getPhoneNumber(), '+62') === 0
-                ? '62' . substr($schema->getPhoneNumber(), '+62') === 0
+                ? '62' . substr($schema->getPhoneNumber(), 3) === 0
                 : false);
 
         $message = $this->getConfig()
