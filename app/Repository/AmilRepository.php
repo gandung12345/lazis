@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Lazis\Api\Repository;
 
+use Doctrine\ORM\Query\Expr;
 use Lazis\Api\Entity\Amil;
+use Lazis\Api\Entity\Organization;
 use Lazis\Api\Entity\Organizer;
 use Schnell\Entity\EntityInterface;
 use Schnell\Hydrator\ArrayHydrator;
@@ -101,5 +103,55 @@ class AmilRepository extends AbstractRepository
             ->remove($id, new Amil());
 
         return $result;
+    }
+
+    /**
+     * @param string $amilId
+     * @param bool $hydrated
+     * @return \Schnell\Entity\EntityInterface|array|null
+     */
+    public function getOrganization(string $amilId, bool $hydrated = false): EntityInterface|array|null
+    {
+        $entities = [new Organization(), new Organizer(), new Amil()];
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+        $result = $queryBuilder
+            ->select($entities[0]->getQueryBuilderAlias())
+            ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
+            ->join(
+                $entities[1]->getDqlName(),
+                $entities[1]->getQueryBuilderAlias(),
+                Expr\Join::WITH,
+                sprintf(
+                    '%s.id = %s.organization',
+                    $entities[0]->getQueryBuilderAlias(),
+                    $entities[1]->getQueryBuilderAlias()
+                )
+            )
+            ->join(
+                $entities[2]->getDqlName(),
+                $entities[2]->getQueryBuilderAlias(),
+                Expr\Join::WITH,
+                sprintf(
+                    '%s.id = %s.organizer',
+                    $entities[1]->getQueryBuilderAlias(),
+                    $entities[2]->getQueryBuilderAlias()
+                )
+            )
+            ->where($queryBuilder->expr()->eq(
+                sprintf('%s.id', $entities[2]->getQueryBuilderAlias()),
+                '?1'
+            ))
+            ->setParameter(1, $amilId)
+            ->getQuery()
+            ->getResult();
+
+        if (sizeof($result) !== 1) {
+            return null;
+        }
+
+        return $hydrated
+            ? MapHydrator::create()->hydrate($result[0])
+            : $result[0];
     }
 }

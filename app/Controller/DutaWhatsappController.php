@@ -101,4 +101,18 @@ class DutaWhatsappController extends BaseController
 
         return $this->json($response, $result);
     }
+
+    #[Route('/dutaWhatsapp/latest', method: 'GET')]
+    public function getLatestGatewayConfig(
+        Request $request,
+        Response $response,
+        array $args
+    ): Response {
+        $repository = new DutaWhatsappRepository(
+            $this->getContainer()->get('mapper'),
+            $request
+        );
+
+        return $this->json($response, $repository->getLatest(true));
+    }
 }
