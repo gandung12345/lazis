@@ -16,6 +16,7 @@ use Lazis\Api\Type\Dskl;
 use Lazis\Api\Type\Education;
 use Lazis\Api\Type\InfaqProgram;
 use Lazis\Api\Type\Jpzis;
+use Lazis\Api\Type\MessageTemplate;
 use Lazis\Api\Type\Muzakki;
 use Lazis\Api\Type\NonHalalDistribution;
 use Lazis\Api\Type\NonHalalFunding;
@@ -236,6 +237,16 @@ trait SchemaTrait
     private const array JPZIS_TYPE_LIST = [
         Jpzis::MOSQUE,
         Jpzis::OTHER
+    ];
+
+    /**
+     * @var array
+     */
+    private const array MESSAGE_TEMPLATE_TYPE_LIST = [
+        MessageTemplate::ZAKAT_MAAL,
+        MessageTemplate::ZAKAT_FITRAH,
+        MessageTemplate::NU_COIN,
+        MessageTemplate::INFAQ
     ];
 
     /**
