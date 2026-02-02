@@ -386,7 +386,7 @@ final class Validator implements ValidatorInterface
 
                 if (false === $matched || 0 === $matched) {
                     throw new ValidatorException(
-                        sprintf("'%s' is invalid.", $meta['prop']->getValue()->stringify())
+                        sprintf("'%s' is invalid.", $meta['prop']->getValue($schema))
                     );
                 }
             }
@@ -441,7 +441,7 @@ final class Validator implements ValidatorInterface
                 $contextValueList = $chainEnumValue[$fieldValue];
 
                 $exists = in_array(
-                    $meta['prop']->getValue(),
+                    $meta['prop']->getValue($schema),
                     $contextValueList,
                     true
                 );
@@ -451,7 +451,7 @@ final class Validator implements ValidatorInterface
                         sprintf(
                             "'%s' with value %s not found in '%s' value %s.",
                             $name,
-                            strval($meta['prop']->getValue()),
+                            strval($meta['prop']->getValue($schema)),
                             $meta['attr']['chainEnum']->getField(),
                             strval($fieldValue)
                         )

@@ -7,6 +7,7 @@ namespace Lazis\Api\Controller;
 use Lazis\Api\Notification\NotifierStrategy;
 use Lazis\Api\Notification\Notifier\DutaWhatsappNotifier;
 use Lazis\Api\Notification\Payload\DutaWhatsappPayload;
+use Lazis\Api\Repository\MessageTemplateRepository;
 use Lazis\Api\Repository\NuCoinCrossTransactionRepository;
 use Lazis\Api\Repository\OrganizationRepository;
 use Lazis\Api\Repository\DutaWhatsappRepository;
@@ -92,23 +93,42 @@ class NuCoinCrossTransactionController extends BaseController
         $source = $organizationRepository->getById($transferState->getSourceId());
         $destination = $organizationRepository->getById($transferState->getDestinationId());
 
-        $sourcePhoneNumber = strpos($source->getPhoneNumber(), '0') === 0
-            ? '62' . substr($source->getPhoneNumber(), 1)
-            : (strpos($source->getPhoneNumber(), '+62') === 0
-                ? '62' . substr($source->getPhoneNumber(), 3)
-                : false);
+        $sourcePhoneNumber = $source->getPhoneNumber();
+        $destinationPhoneNumber = $destination->getPhoneNumber();
 
-        $destinationPhoneNumber = strpos($destination->getPhoneNumber(), '0') === 0
-            ? '62' . substr($destination->getPhoneNumber(), 1)
-            : (strpos($destination->getPhoneNumber(), '+62') === 0
-                ? '62' . substr($destination->getPhoneNumber(), 3)
-                : false);
+        if (strpos($sourcePhoneNumber, '62') !== 0) {
+            $sourcePhoneNumber = strpos($sourcePhoneNumber, '0') === 0
+                ? '62' . substr($sourcePhoneNumber, 1)
+                : (strpos($sourcePhoneNumber, '+62') === 0
+                    ? '62' . substr($sourcePhoneNumber, 3)
+                    : false);
+        }
+
+        if (strpos($destinationPhoneNumber, '62') !== 0) {
+            $destinationPhoneNumber = strpos($destinationPhoneNumber, '0') === 0
+                ? '62' . substr($destinationPhoneNumber, 1)
+                : (strpos($destinationPhoneNumber, '+62') === 0
+                    ? '62' . substr($destinationPhoneNumber, 3)
+                    : false);
+        }
+
+        $messageTemplateRepository = new MessageTemplateRepository(
+            $this->getContainer()->get('mapper'),
+            $request
+        );
+
+        $messageTemplates = $messageTemplateRepository->getAll();
+
+        $message = $messageTemplates['nuCoin'];
+        $message = str_replace('<sourceName>', $transferState->getSourceName(), $message);
+        $message = str_replace('<destinationName>', $transferState->getDestinationName(), $message);
+        $message = str_replace('<amount>', strval($transferState->getAmount()), $message);
 
         $payload = new DutaWhatsappPayload(
             $gatewayConfig->getApiKey(),
             $sourcePhoneNumber,
             $destinationPhoneNumber,
-            $this->getNotificationMessage($transferState, $repository)
+            $message
         );
 
         $factory = SdkFactory::create();

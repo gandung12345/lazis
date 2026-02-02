@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lazis\Api\Controller;
 
 use Throwable;
-use Lazis\Api\Csv\Processor;
+use Lazis\Api\Xlsx\Processor as XlsxProcessor;
 use Lazis\Api\Entity\Organization;
 use Lazis\Api\Entity\Transaction;
 use Lazis\Api\Http\Response\Builder as ResponseBuilder;
@@ -43,6 +43,7 @@ use Lazis\Api\Schema\VolunteerSchema;
 use Lazis\Api\Schema\WalletSchema;
 use Lazis\Api\Sdk\SdkFactory;
 use Lazis\Api\Sdk\DutaWhatsapp\Payload\CreateDevice as CreateDevicePayload;
+use Lazis\Api\Sdk\DutaWhatsapp\Payload\DeviceInfo as DeviceInfoPayload;
 use Lazis\Api\Type\Role as RoleType;
 use OpenApi\Attributes as OpenApi;
 use Schnell\Attribute\Route;
@@ -129,10 +130,18 @@ class OrganizationController extends BaseController
             $request
         );
 
-        $hydratedEntity = $repository->create($schema);
+        try {
+            $result = $this->registerNumberToGateway($request, $schema->getPhoneNumber());
+        } catch (Throwable $e) {
+            $builder = new ResponseBuilder();
+            $builder = $builder
+                ->withPair('code', $e->getCode())
+                ->withPair('message', $e->getMessage());
 
-        // add logic to register phone number to gateway
-        $result = $this->registerNumberToGateway($request, $hydratedEntity['phoneNumber']);
+            return $this->json($response, $builder->build(), $e->getCode());
+        }
+
+        $hydratedEntity = $repository->create($schema);
 
         if (null === $result) {
             $builder = new ResponseBuilder();
@@ -517,16 +526,32 @@ class OrganizationController extends BaseController
         $sdkFactory = SdkFactory::create();
         $dutaWhatsappGateway = $sdkFactory->getDutaWhatsapp($gatewayConfig->getUrl());
 
-        $createDevice = new CreateDevicePayload(
+        $deviceInfo = new DeviceInfoPayload(
             $gatewayConfig->getApiKey(),
-            $this->normalizePhoneNumber($phoneNumber),
-            ''
+            $this->normalizePhoneNumber($phoneNumber)
         );
 
-        return $dutaWhatsappGateway->createDevice($createDevice);
+        try {
+            $deviceInfoResponse = $dutaWhatsappGateway->deviceInfo($deviceInfo);
+            $responseCode = $deviceInfoResponse->getStatusCode();
+        } catch (Throwable $e) {
+            $responseCode = $e->getCode();
+        }
+
+        if ($responseCode === HttpCode::BAD_REQUEST) {
+            $createDevice = new CreateDevicePayload(
+                $gatewayConfig->getApiKey(),
+                $this->normalizePhoneNumber($phoneNumber),
+                ''
+            );
+
+            return $dutaWhatsappGateway->createDevice($createDevice);
+        }
+
+        return $deviceInfoResponse;
     }
 
-    private function normalizePhoneNumber(string $phoneNumber): string|bool
+    private function normalizePhoneNumber(string $phoneNumber): string
     {
         if (strpos($phoneNumber, '0') === 0) {
             return '62' . substr($phoneNumber, 1);
@@ -536,7 +561,7 @@ class OrganizationController extends BaseController
             return '62' . substr($phoneNumber, 3);
         }
 
-        return false;
+        return $phoneNumber;
     }
 
     /**
@@ -604,10 +629,8 @@ class OrganizationController extends BaseController
             ? $uploadedFiles[0]->getStream()->getContents()
             : $request->getBody()->getContents();
 
-        $processor = new Processor();
-        $processor->setRowLength(21);
-
-        $schemas = $processor->transform(new OrganizerSchema(), $contents);
+        $processor = XlsxProcessor::create($contents);
+        $schemas   = $processor->transform(new OrganizerSchema());
 
         $organizerRepository = new OrganizerRepository(
             $this->getContainer()->get('mapper'),
@@ -726,7 +749,7 @@ class OrganizationController extends BaseController
                 ->withPair('code', HttpCode::BAD_REQUEST)
                 ->withPair(
                     'message',
-                    'Volunteer CSV data is not exist in both ' .
+                    'Volunteer XLSX data is not exist in both ' .
                     'uploaded files and stream body contents.'
                 );
 
@@ -737,10 +760,8 @@ class OrganizationController extends BaseController
             ? $uploadedFiles[0]->getStream()->getContents()
             : $request->getBody()->getContents();
 
-        $processor = new Processor();
-        $processor->setRowLength(20);
-
-        $schemas = $processor->transform(new VolunteerSchema(), $contents);
+        $processor = XlsxProcessor::create($contents);
+        $schemas   = $processor->transform(new VolunteerSchema());
 
         $volunteerRepository = new VolunteerRepository(
             $this->getContainer()->get('mapper'),
@@ -853,7 +874,7 @@ class OrganizationController extends BaseController
                 ->withPair('code', HttpCode::BAD_REQUEST)
                 ->withPair(
                     'message',
-                    'Donee CSV data is not exist in both ' .
+                    'Donee XLSX data is not exist in both ' .
                     'uploaded files and stream body contents.'
                 );
 
@@ -864,10 +885,8 @@ class OrganizationController extends BaseController
             ? $uploadedFiles[0]->getStream()->getContents()
             : $request->getBody()->getContents();
 
-        $processor = new Processor();
-        $processor->setRowLength(15);
-
-        $schemas = $processor->transform(new DoneeSchema(), $contents);
+        $processor = XlsxProcessor::create($contents);
+        $schemas   = $processor->transform(new DoneeSchema());
 
         $doneeRepository = new DoneeRepository(
             $this->getContainer()->get('mapper'),

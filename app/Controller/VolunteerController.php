@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lazis\Api\Controller;
 
-use Lazis\Api\Csv\Processor;
+use Lazis\Api\Xlsx\Processor as XlsxProcessor;
 use Lazis\Api\Entity\Donor;
 use Lazis\Api\Entity\Volunteer;
 use Lazis\Api\Http\Response\Builder as ResponseBuilder;
@@ -18,6 +18,7 @@ use Schnell\Attribute\Auth\Auth;
 use Schnell\Attribute\Route;
 use Schnell\Http\Code as HttpCode;
 use Schnell\Paginator\Paginator;
+use Schnell\Schema\SchemaInterface;
 use Schnell\Validator\Validator;
 use Psr\Http\Message\RequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -474,10 +475,8 @@ class VolunteerController extends BaseController
             ? $uploadedFiles[0]->getStream()->getContents()
             : $request->getBody()->getContents();
 
-        $processor = new Processor();
-        $processor->setRowLength(13);
-
-        $schemas = $processor->transform(new DonorSchema(), $contents);
+        $processor = XlsxProcessor::create($contents);
+        $schemas   = $processor->transform(new DonorSchema());
 
         $donorRepository = new DonorRepository(
             $this->getContainer()->get('mapper'),

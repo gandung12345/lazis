@@ -36,7 +36,8 @@ class ContentTypeMiddleware implements MiddlewareInterface
         'multipart/form-data',
         'application/x-www-form-urlencoded',
         'application/octet-stream',
-        'text/csv'
+        'text/csv',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     ];
 
     /**
