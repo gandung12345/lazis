@@ -57,4 +57,32 @@ class ZakatDistributionContextualController extends BaseController
 
         return $this->hateoas($request, $response, $page, $result);
     }
+
+    #[Route('/organizationContext/{oid}/zakatDistribution/statistics', method: 'GET')]
+    #[OpenApi\Get(
+        path: '/organizationContext/{oid}/zakatDistribution/statistics',
+        tags: ['Zakat Distribution Context Statistics'],
+        responses: [
+            new OpenApi\Response(response: 200, description: 'OK'),
+            new OpenApi\Response(response: 400, description: 'Bad Request')
+        ]
+    )]
+    public function getZakatDistributionStatistics(
+        Request $request,
+        Response $response,
+        array $args
+    ): Response {
+        $repository = new ZakatDistributionContextualRepository(
+            $this->getContainer()->get('mapper'),
+            $request
+        );
+
+        try {
+            $statistics = $repository->getStatisticsByOrganizationId($args['oid']);
+        } catch (Throwable $e) {
+            return $this->handleRepositoryException($e, $response);
+        }
+
+        return $this->json($response, $statistics);
+    }
 }

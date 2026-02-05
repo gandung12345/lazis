@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lazis\Api\Repository;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Query\Expr;
 use Lazis\Api\Entity\Donee;
 use Lazis\Api\Entity\Organization;
@@ -100,6 +101,72 @@ class ZakatDistributionContextualRepository extends AbstractRepository
         return $interceptor->intercept()
             ->getQuery()
             ->getSingleScalarResult();
+    }
+
+    /**
+     * @param string $refId
+     * @return array
+     */
+    public function getStatisticsByOrganizationId(string $refId): array
+    {
+        $entities = [new Organization(), new Donee(), new ZakatDistribution()];
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+        $results = $queryBuilder
+            ->select($entities[2]->getQueryBuilderAlias())
+            ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
+            ->join(
+                $entities[1]->getDqlName(),
+                $entities[1]->getQueryBuilderAlias(),
+                Expr\Join::WITH,
+                sprintf(
+                    '%s.id = %s.organization',
+                    $entities[0]->getQueryBuilderAlias(),
+                    $entities[1]->getQueryBuilderAlias()
+                )
+            )
+            ->join(
+                $entities[2]->getDqlName(),
+                $entities[2]->getQueryBuilderAlias(),
+                Expr\Join::WITH,
+                sprintf(
+                    '%s.id = %s.donee',
+                    $entities[1]->getQueryBuilderAlias(),
+                    $entities[2]->getQueryBuilderAlias()
+                )
+            )
+            ->where($queryBuilder->expr()->eq(
+                sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
+                '?1'
+            ))
+            ->setParameter(1, $refId)
+            ->getQuery()
+            ->getResult();
+
+        $dateTime = new DateTimeImmutable();
+        $yearList = [];
+        $current  = $dateTime->format('Y');
+
+        array_unshift($yearList, $current);
+
+        $tmpDateTime = $dateTime;
+
+        for ($i = 0; $i < 4; $i++) {
+            $tmpDateTime = $tmpDateTime->modify('-1 year');
+            array_unshift($yearList, $tmpDateTime->format('Y'));
+        }
+
+        $yearMap = array_combine($yearList, array_fill(0, 5, 0));
+
+        foreach ($results as $result) {
+            $tmp = $result->format('Y');
+
+            if (array_key_exists($tmp, $yearMap)) {
+                $yearMap[$tmp]++;
+            }
+        }
+
+        return $yearMap;
     }
 
     /**
