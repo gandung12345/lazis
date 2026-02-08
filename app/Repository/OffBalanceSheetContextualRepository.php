@@ -103,6 +103,84 @@ class OffBalanceSheetContextualRepository extends AbstractRepository
     }
 
     /**
+     * @param string $refId
+     * @return array
+     */
+    public function getStatisticsByOrganizationId(string $refId): array
+    {
+        $entities = [new Organization(), new Mosque(), new OffBalanceSheet()];
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+        $results = $queryBuilder
+            ->select($entities[2]->getQueryBuilderAlias())
+            ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
+            ->join(
+                $entities[1]->getDqlName(),
+                $entities[1]->getQueryBuilderAlias(),
+                Expr\Join::WITH,
+                sprintf(
+                    '%s.id = %s.organization',
+                    $entities[0]->getQueryBuilderAlias(),
+                    $entities[1]->getQueryBuilderAlias()
+                )
+            )
+            ->join(
+                $entities[2]->getDqlName(),
+                $entities[2]->getQueryBuilderAlias(),
+                Expr\Join::WITH,
+                sprintf(
+                    '%s.id = %s.mosque',
+                    $entities[1]->getQueryBuilderAlias(),
+                    $entities[2]->getQueryBuilderAlias()
+                )
+            )
+            ->where($queryBuilder->expr()->eq(
+                sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
+                '?1'
+            ))
+            ->setParameter(1, $refId)
+            ->getQuery()
+            ->getResult();
+
+        if (sizeof($results) === 0) {
+            return array_fill(0, 12, 0);
+        }
+
+        return $this->hydrateOffBalanceSheetsToStatisticsList($results);
+    }
+
+    /**
+     * @param array $results
+     * @return array
+     */
+    private function hydrateOffBalanceSheetsToStatisticsList(array $results): array
+    {
+        $currentYear = (new DateTimeImmutable())->format('Y');
+        $monthList = [
+            '01', '02', '03',
+            '04', '05', '06',
+            '07', '08', '09',
+            '10', '11', '12'
+        ];
+
+        $normalizedResults = array_fill(0, 12, 0);
+
+        $results = array_filter(
+            $results,
+            function (EntityInterface $entity) use ($currentYear) {
+                return $results->getDate()->format('Y') === $currentYear;
+            }
+        );
+
+        foreach ($results as $result) {
+            $index = array_search($result->getDate()->format('m'), $monthList, true);
+            $normalizedResults[$index]++;
+        }
+
+        return $normalizedResults;
+    }
+
+    /**
      * @param mixed $refId
      * @return array
      */

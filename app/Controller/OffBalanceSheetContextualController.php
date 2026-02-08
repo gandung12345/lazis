@@ -57,4 +57,26 @@ class OffBalanceSheetContextualController extends BaseController
 
         return $this->hateoas($request, $response, $page, $result);
     }
+
+    #[Route('/organizationContext/{oid}/offBalanceSheet/statistics', method: 'GET')]
+    #[OpenApi\Get(
+        path: '/organizationContext/{oid}/offBalanceSheet/statistics',
+        tags: ['Off Balance Sheet Context Statistics'],
+        responses: [
+            new OpenApi\Response(response: 200, description: 'OK'),
+            new OpenApi\Response(response: 400, description: 'Bad Request')
+        ]
+    )]
+    public function getStatisticsByOrganizationId(
+        Request $request,
+        Response $response,
+        array $args
+    ): Response {
+        $repository = new OffBalanceSheetContextualRepository(
+            $this->getContainer()->get('mapper'),
+            $request
+        );
+
+        return $this->json($response, $repository->getStatisticsByOrganizationId($args['oid']));
+    }
 }
