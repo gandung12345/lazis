@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lazis\Api\Repository;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Query\Expr;
 use Lazis\Api\Entity\Donor;
 use Lazis\Api\Entity\NuCoinAggregator;
@@ -173,5 +174,73 @@ class NuCoinAggregatorContextualRepository extends AbstractRepository
             ->withRequest($this->getRequest())
             ->withPage($page)
             ->paginateFromQueryBuilder($queryBuilder, $entities[3]);
+    }
+
+    /**
+     * @param string $refId
+     * @return array
+     */
+    public function fetchAllDonors(string $refId): array
+    {
+        $entities = [
+            new Organization(), new Volunteer(),
+            new Donor(), new NuCoinAggregator()
+        ];
+
+        $dateTime = new DateTimeImmutable();
+        $startDate = new DateTimeImmutable(
+            sprintf('%s-01T00:00:00', $dateTime->format('Y-m'))
+        );
+        $endDate = $startDate
+            ->modify('last day of this month')
+            ->setTime(23, 59, 59);
+
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+        $results = $queryBuilder
+            ->select($entities[2]->getQueryBuilderAlias())
+            ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
+            ->join(
+                $entities[1]->getDqlName(),
+                $entities[1]->getQueryBuilderAlias(),
+                Expr\Join::WITH,
+                sprintf(
+                    '%s.id = %s.organization',
+                    $entities[0]->getQueryBuilderAlias(),
+                    $entities[1]->getQueryBuilderAlias()
+                )
+            )
+            ->join(
+                $entities[2]->getDqlName(),
+                $entities[2]->getQueryBuilderAlias(),
+                Expr\Join::WITH,
+                sprintf(
+                    '%s.id = %s.volunteer',
+                    $entities[1]->getQueryBuilderAlias(),
+                    $entities[2]->getQueryBuilderAlias()
+                )
+            )
+            ->join(
+                $entities[3]->getDqlName(),
+                $entities[3]->getQueryBuilderAlias(),
+                Expr\Join::WITH,
+                sprintf(
+                    '%s.id = %s.donor',
+                    $entities[2]->getQueryBuilderAlias(),
+                    $entities[3]->getQueryBuilderAlias()
+                )
+            )
+            ->where($queryBuilder->expr()->eq(
+                sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
+                '?1'
+            ))
+            ->andWhere(sprintf('%s.date BETWEEN ?2 AND ?3', $entities[3]->getQueryBuilderAlias()))
+            ->setParameter(1, $refId)
+            ->setParameter(2, $startDate)
+            ->setParameter(3, $endDate)
+            ->getQuery()
+            ->getResult();
+
+        return $results;
     }
 }

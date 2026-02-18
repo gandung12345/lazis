@@ -8,6 +8,7 @@ use Throwable;
 use Doctrine\ORM\Query\Expr;
 use Lazis\Api\Entity\Donor;
 use Lazis\Api\Entity\DonorBulkResponseState;
+use Lazis\Api\Entity\Organization;
 use Lazis\Api\Entity\Volunteer;
 use Schnell\Entity\EntityInterface;
 use Schnell\Hydrator\ArrayHydrator;
@@ -293,5 +294,92 @@ class DonorRepository extends AbstractRepository
         $state->setMessage($message);
 
         return $state;
+    }
+
+    /**
+     * @param string $mRefId
+     * @param string $refId
+     * @param string $refType
+     * @return array
+     */
+    public function fetchDonorSheetData(string $mRefId, string $refId, string $refType): array
+    {
+        $nuCoinAggregatorContextualRepository = new NuCoinAggregatorContextualRepository(
+            $this->getMapper(),
+            $this->getRequest()
+        );
+
+        $donors = $this->fetchAllDonorByVolunteerIdAndType($mRefId, $refId, $refType);
+        $aggregationDonors = $nuCoinAggregatorContextualRepository->fetchAllDonors($mRefId);
+
+        $filteredAggregationDonors = $donors;
+
+        foreach ($aggregationDonors as $elem) {
+            $filteredAggregationDonors = array_filter(
+                $filteredAggregationDonors,
+                function (EntityInterface $entity) use ($elem) {
+                    return $elem->getId() !== $entity->getId();
+                }
+            );
+        }
+
+        return $filteredAggregationDonors;
+    }
+
+    /**
+     * @param string $mRefId
+     * @param string $refId
+     * @param string $refType
+     * @return array
+     */
+    public function fetchAllDonorByVolunteerIdAndType(string $mRefId, string $refId, string $refType): array
+    {
+        $entities = [new Organization(), new Volunteer(), new Donor()];
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+        $results = $queryBuilder
+            ->select($entities[2]->getQueryBuilderAlias())
+            ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
+            ->join(
+                $entities[1]->getDqlName(),
+                $entities[1]->getQueryBuilderAlias(),
+                Expr\Join::WITH,
+                sprintf(
+                    '%s.id = %s.organization',
+                    $entities[0]->getQueryBuilderAlias(),
+                    $entities[1]->getQueryBuilderAlias()
+                )
+            )
+            ->join(
+                $entities[2]->getDqlName(),
+                $entities[2]->getQueryBuilderAlias(),
+                Expr\Join::WITH,
+                sprintf(
+                    '%s.id = %s.volunteer',
+                    $entities[1]->getQueryBuilderAlias(),
+                    $entities[2]->getQueryBuilderAlias()
+                )
+            )
+            ->where($queryBuilder->expr()->andX(
+                $queryBuilder->expr()->eq(
+                    sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
+                    '?1'
+                ),
+                $queryBuilder->expr()->eq(
+                    sprintf('%s.id', $entities[1]->getQueryBuilderAlias()),
+                    '?2'
+                ),
+                $queryBuilder->expr()->eq(
+                    sprintf('%s.type', $entities[1]->getQueryBuilderAlias()),
+                    '?3'
+                )
+            ))
+            ->setParameter(1, $mRefId)
+            ->setParameter(2, $refId)
+            ->setParameter(3, $refType)
+            ->getQuery()
+            ->getResult();
+
+        return $results;
     }
 }

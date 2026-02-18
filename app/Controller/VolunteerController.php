@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Lazis\Api\Controller;
 
 use Lazis\Api\Xlsx\Processor as XlsxProcessor;
+use Lazis\Api\Xlsx\Writer as XlsxWriter;
+use Lazis\Api\Xlsx\CallableWriter\NuCoinAggregatorCallableWriter;
 use Lazis\Api\Entity\Donor;
 use Lazis\Api\Entity\Volunteer;
 use Lazis\Api\Http\Response\Builder as ResponseBuilder;
@@ -402,6 +404,53 @@ class VolunteerController extends BaseController
             $page,
             $result
         );
+    }
+
+    #[Route('/organizationContext/{oid}/volunteer/{vid}/type/{vtype}/donor/download', method: 'POST')]
+    #[OpenApi\Post(
+        path: '/volunteer/{vid}/type/{vtype}/donor/download',
+        tags: ['Volunteer'],
+        responses: [
+            new OpenApi\Response(response: 200, description: 'OK'),
+            new OpenApi\Response(response: 400, description: 'Bad Request')
+        ]
+    )]
+    public function fillDonorDataToTransferSheet(
+        Request $request,
+        Response $response,
+        array $args
+    ): Response {
+        $uploadedFiles = array_values($request->getUploadedFiles());
+
+        if (sizeof($uploadedFiles) === 0 && $request->getBody()->getContents() === '') {
+            $builder = new ResponseBuilder();
+            $builder = $builder
+                ->withPair('code', HttpCode::BAD_REQUEST)
+                ->withPair(
+                    'message',
+                    'Nu coin aggregator transfer template sheet is not exist in both ' .
+                    'uploaded files and stream body contents.'
+                );
+
+            return $this->json($response, $builder->build(), HttpCode::BAD_REQUEST);
+        }
+
+        $contents = sizeof($uploadedFiles) === 1
+            ? $uploadedFiles[0]->getStream()->getContents()
+            : $request->getBody()->getContents();
+
+        $repository = new DonorRepository(
+            $this->getContainer()->get('mapper'),
+            $request
+        );
+
+        $results = $repository->fetchDonorSheetData(
+            $args['oid'],
+            $args['vid'],
+            $args['vtype']
+        );
+
+        return XlsxWriter::create($contents)->write($results, new NuCoinAggregatorCallableWriter());
     }
 
     /**

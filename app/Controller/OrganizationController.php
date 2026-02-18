@@ -194,7 +194,7 @@ class OrganizationController extends BaseController
                 ->withPair('code', HttpCode::BAD_REQUEST)
                 ->withPair(
                     'message',
-                    'Organization CSV data is not exist in both ' .
+                    'Organization sheet data is not exist in both ' .
                     'uploaded files and stream body contents.'
                 );
 
