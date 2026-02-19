@@ -17,7 +17,9 @@ class MessageTemplateRepository extends AbstractRepository
         MessageTemplateType::ZAKAT_MAAL => 'zakatMaal',
         MessageTemplateType::ZAKAT_FITRAH => 'zakatFitrah',
         MessageTemplateType::NU_COIN => 'nuCoin',
-        MessageTemplateType::INFAQ => 'infaq'
+        MessageTemplateType::INFAQ => 'infaq',
+        MessageTemplateType::AMIL_FUNDING => 'amilFunding',
+        MessageTemplateType::DSKL => 'dskl'
     ];
 
     /**

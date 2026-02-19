@@ -30,4 +30,14 @@ final class MessageTemplate
      * @var int
      */
     public const int INFAQ = 4;
+
+    /**
+     * @var int
+     */
+    public const int AMIL_FUNDING = 5;
+
+    /**
+     * @var int
+     */
+    public const int DSKL = 6;
 }
