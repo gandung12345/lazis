@@ -158,7 +158,7 @@ class WalletController extends BaseController
         );
 
         try {
-            $wallet = $walletRepository->getById($request, $args['id'], false);
+            $wallet = $walletRepository->getById($args['id'], false);
         } catch (Throwable $e) {
             $wallet = null;
         }
