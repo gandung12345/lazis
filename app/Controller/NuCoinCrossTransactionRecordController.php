@@ -7,8 +7,10 @@ namespace Lazis\Api\Controller;
 use Lazis\Api\Entity\NuCoinCrossTransactionRecord;
 use Lazis\Api\Http\Response\Builder as ResponseBuilder;
 use Lazis\Api\Repository\NuCoinCrossTransactionRecordRepository;
+use Lazis\Api\Type\Role as RoleType;
 use Psr\Http\Message\RequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
+use Schnell\Attribute\Auth\Auth;
 use Schnell\Attribute\Route;
 use Schnell\Http\Code as HttpCode;
 use Schnell\Paginator\Paginator;
@@ -24,6 +26,13 @@ class NuCoinCrossTransactionRecordController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/nuCoinCrossTransactionRecord', method: 'GET')]
     #[OpenApi\Get(
         path: '/nuCoinCrossTransactionRecord',
@@ -64,6 +73,13 @@ class NuCoinCrossTransactionRecordController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/nuCoinCrossTransactionRecord/{id}', method: 'GET')]
     #[OpenApi\Get(
         path: '/nuCoinCrossTransactionRecord/{id}',

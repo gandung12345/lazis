@@ -145,7 +145,8 @@ class AmilController extends BaseController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
-            RoleType::ADMIN_MASTER_DATA
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
         ]
     )]
     #[Route('/amil/{id}', method: 'PUT')]
@@ -198,7 +199,8 @@ class AmilController extends BaseController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
-            RoleType::ADMIN_MASTER_DATA
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
         ]
     )]
     #[Route('/amil/{id}', method: 'DELETE')]
@@ -246,7 +248,8 @@ class AmilController extends BaseController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
-            RoleType::AGGREGATOR_ADMIN
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
         ]
     )]
     #[Route('/amil/{aid}/amilFunding', method: 'POST')]
@@ -368,7 +371,8 @@ class AmilController extends BaseController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
-            RoleType::AGGREGATOR_ADMIN
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
         ]
     )]
     #[Route('/amil/{aid}/dskl', method: 'POST')]
@@ -490,7 +494,8 @@ class AmilController extends BaseController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
-            RoleType::AGGREGATOR_ADMIN
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
         ]
     )]
     #[Route('/amil/{aid}/infaq', method: 'POST')]
@@ -612,7 +617,8 @@ class AmilController extends BaseController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
-            RoleType::AGGREGATOR_ADMIN
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
         ]
     )]
     #[Route('/amil/{aid}/zakat', method: 'POST')]

@@ -136,7 +136,8 @@ class DoneeController extends AbstractController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
-            RoleType::ADMIN_MASTER_DATA
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
         ]
     )]
     #[Route('/donee/{id}', method: 'PUT')]
@@ -189,7 +190,8 @@ class DoneeController extends AbstractController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
-            RoleType::ADMIN_MASTER_DATA
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
         ]
     )]
     #[Route('/donee/{id}', method: 'DELETE')]
@@ -237,6 +239,7 @@ class DoneeController extends AbstractController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
             RoleType::TASHARUF_ADMIN
         ]
     )]

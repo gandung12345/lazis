@@ -132,7 +132,8 @@ class ZakatController extends BaseController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
-            RoleType::AGGREGATOR_ADMIN
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
         ]
     )]
     #[Route('/zakat/{id}', method: 'PUT')]
@@ -185,7 +186,8 @@ class ZakatController extends BaseController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
-            RoleType::AGGREGATOR_ADMIN
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
         ]
     )]
     #[Route('/zakat/{id}', method: 'DELETE')]

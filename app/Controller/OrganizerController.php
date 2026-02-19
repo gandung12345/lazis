@@ -138,7 +138,8 @@ class OrganizerController extends AbstractController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
-            RoleType::ADMIN_MASTER_DATA
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
         ]
     )]
     #[Route('/organizer/{id}', method: 'PUT')]
@@ -191,7 +192,8 @@ class OrganizerController extends AbstractController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
-            RoleType::ADMIN_MASTER_DATA
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
         ]
     )]
     #[Route('/organizer/{id}', method: 'DELETE')]
@@ -239,7 +241,8 @@ class OrganizerController extends AbstractController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
-            RoleType::ADMIN_MASTER_DATA
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
         ]
     )]
     #[Route('/organizer/{oid}/amil', method: 'POST')]
@@ -292,7 +295,8 @@ class OrganizerController extends AbstractController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
-            RoleType::ADMIN_MASTER_DATA
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
         ]
     )]
     #[Route('/organizer/{oid}/users', method: 'POST')]

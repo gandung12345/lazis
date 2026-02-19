@@ -131,7 +131,8 @@ class InfaqController extends BaseController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
-            RoleType::AGGREGATOR_ADMIN
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
         ]
     )]
     #[Route('/infaq/{id}', method: 'PUT')]
@@ -184,7 +185,8 @@ class InfaqController extends BaseController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
-            RoleType::AGGREGATOR_ADMIN
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
         ]
     )]
     #[Route('/infaq/{id}', method: 'DELETE')]

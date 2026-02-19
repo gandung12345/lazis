@@ -32,7 +32,8 @@ class LegalController extends BaseController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
-            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
         ]
     )]
     #[Route('/legal', method: 'GET')]
@@ -126,7 +127,13 @@ class LegalController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
-    #[Auth(role: [RoleType::ROOT, RoleType::ADMIN])]
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/legal/{id}', method: 'PUT')]
     #[OpenApi\Put(
         path: '/legal/{id}',
@@ -174,7 +181,13 @@ class LegalController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
-    #[Auth(role: [RoleType::ROOT, RoleType::ADMIN])]
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/legal/{id}', method: 'DELETE')]
     #[OpenApi\Delete(
         path: '/legal/{id}',

@@ -7,9 +7,11 @@ namespace Lazis\Api\Controller\Observer;
 use Lazis\Api\Controller\BaseController;
 use Lazis\Api\Controller\ControllerTrait;
 use Lazis\Api\Repository\Observer\OrganizerObserverRepository;
+use Lazis\Api\Type\Role as RoleType;
 use OpenApi\Attributes as OpenApi;
 use Psr\Http\Message\RequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
+use Schnell\Attribute\Auth\Auth;
 use Schnell\Attribute\Route;
 use Schnell\Paginator\Paginator;
 
@@ -20,6 +22,13 @@ class OrganizerObserverController extends BaseController
 {
     use ControllerTrait;
 
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route(
         '/observer/organizer/{scope}/{district}/{village}',
         method: 'GET'

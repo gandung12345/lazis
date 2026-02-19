@@ -65,7 +65,13 @@ class OrganizationController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
-    #[Auth(role: [RoleType::ROOT, RoleType::ADMIN])]
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/organization', method: 'GET')]
     #[OpenApi\Get(
         path: '/organization',
@@ -106,7 +112,13 @@ class OrganizationController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
-    #[Auth(role: [RoleType::ROOT])]
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/organization', method: 'POST')]
     #[OpenApi\Post(
         path: '/organization',
@@ -170,6 +182,13 @@ class OrganizationController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/organizationBulk', method: 'POST')]
     #[OpenApi\Post(
         path: '/organizationBulk',
@@ -282,7 +301,13 @@ class OrganizationController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
-    #[Auth(role: [RoleType::ROOT, RoleType::ADMIN])]
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/organization/{id}', method: 'PUT')]
     #[OpenApi\Put(
         path: '/organization/{id}',
@@ -329,7 +354,13 @@ class OrganizationController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
-    #[Auth(role: [RoleType::ROOT])]
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/organization/{id}', method: 'DELETE')]
     #[OpenApi\Delete(
         path: '/organization/{id}',
@@ -371,7 +402,13 @@ class OrganizationController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
-    #[Auth(role: [RoleType::ROOT, RoleType::ADMIN])]
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/organization/{oid}/bankAccount', method: 'POST')]
     #[OpenApi\Post(
         path: '/organization/{oid}/bankAccount',
@@ -420,7 +457,13 @@ class OrganizationController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
-    #[Auth(role: [RoleType::ROOT, RoleType::ADMIN])]
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/organization/{oid}/legal', method: 'POST')]
     #[OpenApi\Post(
         path: '/organization/{oid}/legal',
@@ -468,7 +511,13 @@ class OrganizationController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
-    #[Auth(role: [RoleType::ROOT, RoleType::ADMIN])]
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/organization/{oid}/organizer', method: 'POST')]
     #[OpenApi\Post(
         path: '/organization/{oid}/organizer',
@@ -570,6 +619,13 @@ class OrganizationController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/organization/{oid}/organizerBulk', method: 'POST')]
     #[OpenApi\Post(
         path: '/organization/{oid}/organizer',
@@ -653,7 +709,13 @@ class OrganizationController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
-    #[Auth(role: [RoleType::ROOT, RoleType::ADMIN])]
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/organization/{oid}/volunteer', method: 'POST')]
     #[OpenApi\Post(
         path: '/organization/{oid}/volunteer',
@@ -701,6 +763,13 @@ class OrganizationController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/organization/{oid}/volunteerBulk', method: 'POST')]
     #[OpenApi\Post(
         path: '/organization/{oid}/volunteerBulk',
@@ -784,7 +853,13 @@ class OrganizationController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
-    #[Auth(role: [RoleType::ROOT, RoleType::ADMIN])]
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/organization/{oid}/donee', method: 'POST')]
     #[OpenApi\Post(
         path: '/organization/{oid}/donee',
@@ -826,6 +901,13 @@ class OrganizationController extends BaseController
         return $this->json($response, $entity, HttpCode::CREATED);
     }
 
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/organization/{oid}/doneeBulk', method: 'POST')]
     #[OpenApi\Post(
         path: '/organization/{oid}/doneeBulk',
@@ -912,7 +994,8 @@ class OrganizationController extends BaseController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
-            RoleType::AGGREGATOR_ADMIN, RoleType::TASHARUF_ADMIN
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
         ]
     )]
     #[Route('/organization/{oid}/transaction', method: 'POST')]
@@ -964,7 +1047,13 @@ class OrganizationController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
-    #[Auth(role: [RoleType::ROOT, RoleType::ADMIN])]
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/organization/{oid}/mosque', method: 'POST')]
     #[OpenApi\Post(
         path: '/organization/{oid}/mosque',
@@ -1012,6 +1101,13 @@ class OrganizationController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/organization/{oid}/mosqueBulk', method: 'POST')]
     #[OpenApi\Post(
         path: '/organization/{oid}/mosqueBulk',
@@ -1198,7 +1294,8 @@ class OrganizationController extends BaseController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
-            RoleType::AGGREGATOR_ADMIN
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
         ]
     )]
     #[Route('/organization/{oid}/nonHalalFundingReceive', method: 'POST')]
@@ -1251,6 +1348,7 @@ class OrganizationController extends BaseController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
             RoleType::TASHARUF_ADMIN
         ]
     )]
@@ -1301,6 +1399,13 @@ class OrganizationController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/organization/{oid}/infaqDistribution', method: 'POST')]
     #[OpenApi\Post(
         path: '/organization/{oid}/infaqDistribution',
@@ -1360,6 +1465,13 @@ class OrganizationController extends BaseController
         return $this->json($response, $entity, HttpCode::CREATED);
     }
 
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/organization/{oid}/infaqDistributionBulk', method: 'POST')]
     #[OpenApi\Post(
         path: '/infaqDistributionBulk',
@@ -1414,6 +1526,13 @@ class OrganizationController extends BaseController
         return $this->json($response, $infaqDistributionStates, HttpCode::MULTI_STATUS);
     }
 
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/organization/{oid}/amilFundingUsage', method: 'POST')]
     #[OpenApi\Post(
         path: '/organization/{oid}/amilFundingUsage',
@@ -1455,6 +1574,13 @@ class OrganizationController extends BaseController
         return $this->json($response, $entity, HttpCode::CREATED);
     }
 
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/organization/{oid}/assetRecording', method: 'POST')]
     #[OpenApi\Post(
         path: '/organization/{oid}/assetRecording',

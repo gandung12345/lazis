@@ -16,8 +16,10 @@ use Lazis\Api\Schema\NuCoinCrossOrganizationTransferSchema;
 use Lazis\Api\Sdk\SdkFactory;
 use Lazis\Api\Type\NuCoinCrossTransactionIncomingStrategy as NuCoinCrossTransactionIncomingStrategyType;
 use Lazis\Api\Type\NuCoinCrossTransactionOutgoingStrategy as NuCoinCrossTransactionOutgoingStrategyType;
+use Lazis\Api\Type\Role as RoleType;
 use Psr\Http\Message\RequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
+use Schnell\Attribute\Auth\Auth;
 use Schnell\Attribute\Route;
 use Schnell\Entity\EntityInterface;
 use Schnell\Hydrator\MapHydrator;
@@ -35,6 +37,13 @@ class NuCoinCrossTransactionController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/nuCoinCrossTransaction', method: 'POST')]
     public function createCrossTransaction(
         Request $request,

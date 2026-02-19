@@ -137,7 +137,8 @@ class DonorController extends BaseController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
-            RoleType::ADMIN_MASTER_DATA
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
         ]
     )]
     #[Route('/donor/{id}', method: 'PUT')]
@@ -190,7 +191,8 @@ class DonorController extends BaseController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
-            RoleType::ADMIN_MASTER_DATA
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
         ]
     )]
     #[Route('/donor/{id}', method: 'DELETE')]
@@ -238,7 +240,8 @@ class DonorController extends BaseController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
-            RoleType::AGGREGATOR_ADMIN
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
         ]
     )]
     #[Route('/donor/{did}/nuCoin', method: 'POST')]
@@ -288,6 +291,13 @@ class DonorController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/donor/{did}/nuCoinAggregator', method: 'POST')]
     #[OpenApi\Post(
         path: '/donor/{did}/nuCoinAggregator',
@@ -338,7 +348,8 @@ class DonorController extends BaseController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
-            RoleType::AGGREGATOR_ADMIN
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
         ]
     )]
     #[Route('/donor/{did}/multipleNuCoin', method: 'POST')]

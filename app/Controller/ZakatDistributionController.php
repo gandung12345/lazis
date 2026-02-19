@@ -135,6 +135,7 @@ class ZakatDistributionController extends BaseController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
             RoleType::TASHARUF_ADMIN
         ]
     )]
@@ -188,6 +189,7 @@ class ZakatDistributionController extends BaseController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
             RoleType::TASHARUF_ADMIN
         ]
     )]
@@ -233,6 +235,13 @@ class ZakatDistributionController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/zakatDistributionBulk', method: 'POST')]
     #[OpenApi\Post(
         path: '/zakatDistributionBulk',

@@ -7,9 +7,11 @@ namespace Lazis\Api\Controller;
 use Throwable;
 use Lazis\Api\Http\Response\Builder as ResponseBuilder;
 use Lazis\Api\Repository\OrganizerContextualRepository;
+use Lazis\Api\Type\Role as RoleType;
 use OpenApi\Attributes as OpenApi;
 use Psr\Http\Message\RequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
+use Schnell\Attribute\Auth\Auth;
 use Schnell\Attribute\Route;
 use Schnell\Http\Code as HttpCode;
 use Schnell\Paginator\Paginator;
@@ -27,6 +29,13 @@ class OrganizerContextualController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/organizationContext/{oid}/organizer', method: 'GET')]
     #[OpenApi\Get(
         path: '/organizationContext/{oid}/organizer',

@@ -7,6 +7,7 @@ namespace Lazis\Api\Controller;
 use Lazis\Api\Entity\AssetRecording;
 use Lazis\Api\Http\Response\Builder as ResponseBuilder;
 use Lazis\Api\Repository\AssetRecordingRepository;
+use Lazis\Api\Type\Role as RoleType;
 use OpenApi\Attributes as OpenApi;
 use Psr\Http\Message\RequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -21,6 +22,13 @@ use Schnell\Validator\Validator;
  */
 class AssetRecordingController extends BaseController
 {
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/assetRecording', method: 'GET')]
     #[OpenApi\Get(
         path: '/assetRecording',
@@ -55,6 +63,13 @@ class AssetRecordingController extends BaseController
         );
     }
 
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/assetRecording/{id}', method: 'GET')]
     #[OpenApi\Get(
         path: '/assetRecording/{id}',
@@ -95,6 +110,13 @@ class AssetRecordingController extends BaseController
         return $this->json($response, $result);
     }
 
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/assetRecording/{id}', method: 'PUT')]
     #[OpenApi\Put(
         path: '/assetRecording/{id}',
@@ -136,6 +158,13 @@ class AssetRecordingController extends BaseController
         return $this->json($response, $result);
     }
 
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/assetRecording/{id}', method: 'DELETE')]
     #[OpenApi\Delete(
         path: '/assetRecording/{id}',

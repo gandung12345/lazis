@@ -8,7 +8,9 @@ use Lazis\Api\Entity\NuCoinCrossTransferQueue;
 use Lazis\Api\Http\Response\Builder as ResponseBuilder;
 use Lazis\Api\Repository\NuCoinCrossTransferQueueRepository;
 use Lazis\Api\Schema\NuCoinCrossTransferQueueSchema;
+use Lazis\Api\Type\Role as RoleType;
 use OpenApi\Attributes as OpenApi;
+use Schnell\Attribute\Auth\Auth;
 use Schnell\Attribute\Route;
 use Schnell\Http\Code as HttpCode;
 use Schnell\Paginator\Paginator;
@@ -21,6 +23,13 @@ use Psr\Http\Message\ResponseInterface as Response;
  */
 class NuCoinCrossTransferQueueController extends BaseController
 {
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/nuCoinCrossTransferQueue', method: 'GET')]
     #[OpenApi\Get(
         path: '/nuCoinCrossTransferQueue',
@@ -55,6 +64,13 @@ class NuCoinCrossTransferQueueController extends BaseController
         );
     }
 
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/nuCoinCrossTransferQueue', method: 'POST')]
     #[OpenApi\Post(
         path: '/nuCoinCrossTransferQueue',
@@ -85,6 +101,13 @@ class NuCoinCrossTransferQueueController extends BaseController
         );
     }
 
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/nuCoinCrossTransferQueue/{id}', method: 'GET')]
     #[OpenApi\Get(
         path: '/nuCoinCrossTransferQueue/{id}',
@@ -125,6 +148,13 @@ class NuCoinCrossTransferQueueController extends BaseController
         return $this->json($response, $result);
     }
 
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/nuCoinCrossTransferQueue/{id}', method: 'PUT')]
     #[OpenApi\Put(
         path: '/nuCoinCrossTransferQueue/{id}',

@@ -128,7 +128,13 @@ class BankAccountController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
-    #[Auth(role: [RoleType::ROOT, RoleType::ADMIN])]
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/bankAccount/{id}', method: 'PUT')]
     #[OpenApi\Put(
         path: '/bankAccount/{id}',
@@ -176,7 +182,13 @@ class BankAccountController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
-    #[Auth(role: [RoleType::ROOT, RoleType::ADMIN])]
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/bankAccount/{id}', method: 'DELETE')]
     #[OpenApi\Delete(
         path: '/bankAccount/{id}',

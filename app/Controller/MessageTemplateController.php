@@ -6,6 +6,8 @@ namespace Lazis\Api\Controller;
 
 use Lazis\Api\Repository\MessageTemplateRepository;
 use Lazis\Api\Schema\MessageTemplateSchema;
+use Lazis\Api\Type\Role as RoleType;
+use Schnell\Attribute\Auth\Auth;
 use Schnell\Attribute\Route;
 use Schnell\Http\Code as HttpCode;
 use Schnell\Validator\Validator;
@@ -19,6 +21,13 @@ use function json_decode;
  */
 class MessageTemplateController extends BaseController
 {
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/messageTemplate', method: 'GET')]
     public function getAllMessageTemplate(
         Request $request,
@@ -33,6 +42,13 @@ class MessageTemplateController extends BaseController
         return $this->json($response, $repository->getAll(), HttpCode::OK);
     }
 
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/messageTemplate', method: 'POST')]
     public function createOrUpdateMessageTemplate(
         Request $request,

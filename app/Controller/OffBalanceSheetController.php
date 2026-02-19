@@ -130,7 +130,13 @@ class OffBalanceSheetController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
-    #[Auth(role: [RoleType::ROOT, RoleType::ADMIN])]
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/offBalanceSheet/{id}', method: 'PUT')]
     #[OpenApi\Put(
         path: '/offBalanceSheet/{id}',
@@ -178,7 +184,13 @@ class OffBalanceSheetController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
-    #[Auth(role: [RoleType::ROOT, RoleType::ADMIN])]
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/offBalanceSheet/{id}', method: 'DELETE')]
     #[OpenApi\Delete(
         path: '/offBalanceSheet/{id}',

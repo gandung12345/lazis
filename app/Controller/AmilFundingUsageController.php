@@ -130,6 +130,7 @@ class AmilFundingUsageController extends BaseController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
             RoleType::TASHARUF_ADMIN
         ]
     )]
@@ -183,7 +184,8 @@ class AmilFundingUsageController extends BaseController
     #[Auth(
         role: [
             RoleType::ROOT, RoleType::ADMIN,
-            RoleType::ADMIN_MASTER_DATA, RoleType::TASHARUF_ADMIN
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
         ]
     )]
     #[Route('/amilFundingUsage/{id}', method: 'DELETE')]

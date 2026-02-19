@@ -10,7 +10,9 @@ use Lazis\Api\Http\Response\Builder as ResponseBuilder;
 use Lazis\Api\Repository\NuCoinAggregatorRepository;
 use Lazis\Api\Schema\NuCoinAggregatorSchema;
 use Lazis\Api\Schema\NuCoinAggregatorCrossTransferSchema;
+use Lazis\Api\Type\Role as RoleType;
 use OpenApi\Attributes as OpenApi;
+use Schnell\Attribute\Auth\Auth;
 use Schnell\Attribute\Route;
 use Schnell\Http\Code as HttpCode;
 use Schnell\Hydrator\MapHydrator;
@@ -30,6 +32,13 @@ class NuCoinAggregatorController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/nuCoinAggregator', method: 'GET')]
     #[OpenApi\Get(
         path: '/nuCoinAggregator',
@@ -70,6 +79,13 @@ class NuCoinAggregatorController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/nuCoinAggregator/{id}', method: 'GET')]
     #[OpenApi\Get(
         path: '/nuCoinAggregator/{id}',
@@ -116,6 +132,13 @@ class NuCoinAggregatorController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/nuCoinAggregator/{id}', method: 'PUT')]
     #[OpenApi\Put(
         path: '/nuCoin/{id}',
@@ -163,6 +186,13 @@ class NuCoinAggregatorController extends BaseController
      * @param array $args
      * @return \Psr\Http\Message\ResponseInterface
      */
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/nuCoinAggregator/{id}', method: 'DELETE')]
     #[OpenApi\Delete(
         path: '/nuCoinAggregator/{id}',
@@ -199,6 +229,13 @@ class NuCoinAggregatorController extends BaseController
         return $this->json($response, $entity);
     }
 
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/nuCoinAggregator/move', method: 'POST')]
     #[OpenApi\Post(
         path: '/nuCoinAggregator/move',

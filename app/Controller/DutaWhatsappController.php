@@ -7,7 +7,9 @@ namespace Lazis\Api\Controller;
 use Throwable;
 use Lazis\Api\Entity\DutaWhatsapp;
 use Lazis\Api\Repository\DutaWhatsappRepository;
+use Lazis\Api\Type\Role as RoleType;
 use Lazis\Api\Schema\DutaWhatsappSchema;
+use Schnell\Attribute\Auth\Auth;
 use Schnell\Attribute\Route;
 use Schnell\Http\Code as HttpCode;
 use Schnell\Paginator\Paginator;
@@ -20,6 +22,13 @@ use Psr\Http\Message\RequestInterface as Request;
  */
 class DutaWhatsappController extends BaseController
 {
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/dutaWhatsapp', method: 'GET')]
     public function getAllDws(
         Request $request,
@@ -47,6 +56,13 @@ class DutaWhatsappController extends BaseController
         );
     }
 
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/dutaWhatsapp', method: 'POST')]
     public function createDw(
         Request $request,
@@ -70,6 +86,13 @@ class DutaWhatsappController extends BaseController
         );
     }
 
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/dutaWhatsapp/{id}', method: 'POST')]
     public function getDwById(
         Request $request,
@@ -102,6 +125,13 @@ class DutaWhatsappController extends BaseController
         return $this->json($response, $result);
     }
 
+    #[Auth(
+        role: [
+            RoleType::ROOT, RoleType::ADMIN,
+            RoleType::ADMIN_MASTER_DATA, RoleType::AGGREGATOR_ADMIN,
+            RoleType::TASHARUF_ADMIN
+        ]
+    )]
     #[Route('/dutaWhatsapp/latest', method: 'GET')]
     public function getLatestGatewayConfig(
         Request $request,
