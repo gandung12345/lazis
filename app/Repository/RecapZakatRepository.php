@@ -275,7 +275,7 @@ class RecapZakatRepository extends AbstractRepository
                 ->getResult();
 
             foreach ($zakatList as $zakatObj) {
-                $result['zakatAggregation']['zakatMaalFundingPersonal'] += $zakatObj->getAmount();
+                $result['zakatAggregation']['zakatMaalFundingPersonal'] += abs($zakatObj->getAmount());
             }
         }
 
@@ -367,7 +367,7 @@ class RecapZakatRepository extends AbstractRepository
                 ->getResult();
 
             foreach ($zakatList as $zakatObj) {
-                $result['zakatAggregation']['zakatMaalFundingCollective'] += $zakatObj->getAmount();
+                $result['zakatAggregation']['zakatMaalFundingCollective'] += abs($zakatObj->getAmount());
             }
         }
 
@@ -454,7 +454,7 @@ class RecapZakatRepository extends AbstractRepository
                 ->getResult();
 
             foreach ($zakatList as $zakatObj) {
-                $result['zakatAggregation']['zakatFitrFunding'] += $zakatObj->getAmount();
+                $result['zakatAggregation']['zakatFitrFunding'] += abs($zakatObj->getAmount());
             }
         }
 
@@ -524,7 +524,7 @@ class RecapZakatRepository extends AbstractRepository
                 ->getResult();
 
             foreach ($zakatDistributionList as $zakatDistribution) {
-                $result['asnafBasedZakatDistribution']['fakir'] += $zakatDistribution->getAmount();
+                $result['asnafBasedZakatDistribution']['fakir'] += abs($zakatDistribution->getAmount());
             }
         }
 
@@ -594,7 +594,7 @@ class RecapZakatRepository extends AbstractRepository
                 ->getResult();
 
             foreach ($zakatDistributionList as $zakatDistribution) {
-                $result['asnafBasedZakatDistribution']['poor'] += $zakatDistribution->getAmount();
+                $result['asnafBasedZakatDistribution']['poor'] += abs($zakatDistribution->getAmount());
             }
         }
 
@@ -664,7 +664,7 @@ class RecapZakatRepository extends AbstractRepository
                 ->getResult();
 
             foreach ($zakatDistributionList as $zakatDistribution) {
-                $result['asnafBasedZakatDistribution']['fisabilillah'] += $zakatDistribution->getAmount();
+                $result['asnafBasedZakatDistribution']['fisabilillah'] += abs($zakatDistribution->getAmount());
             }
         }
 
@@ -734,7 +734,7 @@ class RecapZakatRepository extends AbstractRepository
                 ->getResult();
 
             foreach ($zakatDistributionList as $zakatDistribution) {
-                $result['asnafBasedZakatDistribution']['ibnSabil'] += $zakatDistribution->getAmount();
+                $result['asnafBasedZakatDistribution']['ibnSabil'] += abs($zakatDistribution->getAmount());
             }
         }
 
@@ -804,7 +804,7 @@ class RecapZakatRepository extends AbstractRepository
                 ->getResult();
 
             foreach ($zakatDistributionList as $zakatDistribution) {
-                $result['asnafBasedZakatDistribution']['gharim'] += $zakatDistribution->getAmount();
+                $result['asnafBasedZakatDistribution']['gharim'] += abs($zakatDistribution->getAmount());
             }
         }
 
@@ -874,7 +874,7 @@ class RecapZakatRepository extends AbstractRepository
                 ->getResult();
 
             foreach ($zakatDistributionList as $zakatDistribution) {
-                $result['asnafBasedZakatDistribution']['mualaf'] += $zakatDistribution->getAmount();
+                $result['asnafBasedZakatDistribution']['mualaf'] += abs($zakatDistribution->getAmount());
             }
         }
 
@@ -941,7 +941,7 @@ class RecapZakatRepository extends AbstractRepository
                 ->getResult();
 
             foreach ($zakatDistributionList as $zakatDistribution) {
-                $result['asnafBasedZakatDistribution']['amilCut'] += $zakatDistribution->getAmount();
+                $result['asnafBasedZakatDistribution']['amilCut'] += abs($zakatDistribution->getAmount());
             }
         }
 
@@ -1011,7 +1011,7 @@ class RecapZakatRepository extends AbstractRepository
                 ->getResult();
 
             foreach ($zakatDistributionList as $zakatDistribution) {
-                $result['programBasedDistribution']['nuCareSmart'] += $zakatDistribution->getAmount();
+                $result['programBasedDistribution']['nuCareSmart'] += abs($zakatDistribution->getAmount());
             }
         }
 
@@ -1081,7 +1081,7 @@ class RecapZakatRepository extends AbstractRepository
                 ->getResult();
 
             foreach ($zakatDistributionList as $zakatDistribution) {
-                $result['programBasedDistribution']['nuCareEmpowered'] += $zakatDistribution->getAmount();
+                $result['programBasedDistribution']['nuCareEmpowered'] += abs($zakatDistribution->getAmount());
             }
         }
 
@@ -1151,7 +1151,7 @@ class RecapZakatRepository extends AbstractRepository
                 ->getResult();
 
             foreach ($zakatDistributionList as $zakatDistribution) {
-                $result['programBasedDistribution']['nuCareHealthy'] += $zakatDistribution->getAmount();
+                $result['programBasedDistribution']['nuCareHealthy'] += abs($zakatDistribution->getAmount());
             }
         }
 
@@ -1221,7 +1221,7 @@ class RecapZakatRepository extends AbstractRepository
                 ->getResult();
 
             foreach ($zakatDistributionList as $zakatDistribution) {
-                $result['programBasedDistribution']['nuCareGreen'] += $zakatDistribution->getAmount();
+                $result['programBasedDistribution']['nuCareGreen'] += abs($zakatDistribution->getAmount());
             }
         }
 
@@ -1291,7 +1291,7 @@ class RecapZakatRepository extends AbstractRepository
                 ->getResult();
 
             foreach ($zakatDistributionList as $zakatDistribution) {
-                $result['programBasedDistribution']['nuCarePeace'] += $zakatDistribution->getAmount();
+                $result['programBasedDistribution']['nuCarePeace'] += abs($zakatDistribution->getAmount());
             }
         }
 
