@@ -24,6 +24,7 @@ use Lazis\Api\Schema\InfaqSchema;
 use Lazis\Api\Schema\ZakatSchema;
 use Lazis\Api\Sdk\SdkFactory;
 use Lazis\Api\Type\Role as RoleType;
+use Lazis\Api\Type\Zakat as ZakatType;
 use OpenApi\Attributes as OpenApi;
 use Schnell\Attribute\Auth\Auth;
 use Schnell\Attribute\Route;
@@ -710,7 +711,10 @@ class AmilController extends BaseController
 
         $messageTemplates = $messageTemplateRepository->getAll();
 
-        $message = $messageTemplates['zakat'];
+        $message = $schema->getType() === ZakatType::MAAL
+            ? $messageTemplates['zakatMaal']
+            : $messageTemplates['zakatFitrah'];
+
         $message = str_replace('<zakatDoer>', $schema->getName(), $message);
         $message = str_replace('<amount>', strval($schema->getAmount()), $message);
 
