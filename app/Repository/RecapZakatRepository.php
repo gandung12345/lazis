@@ -10,6 +10,8 @@ use Lazis\Api\Entity\Amil;
 use Lazis\Api\Entity\Donee;
 use Lazis\Api\Entity\Organization;
 use Lazis\Api\Entity\Organizer;
+use Lazis\Api\Entity\Transaction;
+use Lazis\Api\Entity\Wallet;
 use Lazis\Api\Entity\Zakat;
 use Lazis\Api\Entity\ZakatDistribution;
 use Lazis\Api\Repository\Exception\RepositoryException;
@@ -892,7 +894,7 @@ class RecapZakatRepository extends AbstractRepository
         array $organizationList,
         array &$result
     ): void {
-        $entities = [new Organization(), new Donee(), new ZakatDistribution()];
+        $entities = [new Organization(), new Wallet(), new Transaction()];
         $entityManager = $this->getMapper()->getEntityManager();
         $queryBuilder = $entityManager->createQueryBuilder();
 
@@ -918,7 +920,7 @@ class RecapZakatRepository extends AbstractRepository
                     $entities[2]->getQueryBuilderAlias(),
                     Expr\Join::WITH,
                     sprintf(
-                        '%s.id = %s.donee',
+                        '%s.id = %s.wallet',
                         $entities[1]->getQueryBuilderAlias(),
                         $entities[2]->getQueryBuilderAlias()
                     )
@@ -927,15 +929,12 @@ class RecapZakatRepository extends AbstractRepository
                     $queryBuilder->expr()->eq(
                         sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
                         '?1'
-                    ),
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.asnaf', $entities[1]->getQueryBuilderAlias()),
-                        '?2'
                     )
                 ))
+                ->andWhere(sprintf('%s.description LIKE ?2', $entities[2]->getQueryBuilderAlias()))
                 ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[2]->getQueryBuilderAlias()))
                 ->setParameter(1, $organization->getId())
-                ->setParameter(2, AsnafType::AMIL)
+                ->setParameter(2, '(zakat::amil-funding-cut)%')
                 ->setParameter(3, $startTz)
                 ->setParameter(4, $endTz)
                 ->getQuery()
@@ -1310,15 +1309,9 @@ class RecapZakatRepository extends AbstractRepository
         $aggregation = array_sum(array_values($result['zakatAggregation']));
         $asnafBasedDistribution = array_sum(array_values($result['asnafBasedZakatDistribution']));
         $programBasedDistribution = array_sum(array_values($result['programBasedDistribution']));
+        $calculatedFund = $aggregation - $asnafBasedDistribution - $programBasedDistribution;
 
-        $divisor = intval($asnafBasedDistribution + $programBasedDistribution);
-
-        if ($divisor === 0) {
-            $result['zakatCalculatedFund'] = 0;
-            return;
-        }
-
-        $result['zakatCalculatedFund'] = intval($aggregation / $divisor);
+        $result['zakatCalculatedFund'] = $calculatedFund;
         return;
     }
 }
