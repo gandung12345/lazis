@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lazis\Api\Controller;
 
 use Throwable;
-use Lazis\Api\Repository\RecapZakatRepository;
+use Lazis\Api\Repository\RecapInfaqRepository;
 use Lazis\Api\Type\Role as RoleType;
 use OpenApi\Attributes;
 use Schnell\Attribute\Auth\Auth;
@@ -16,7 +16,7 @@ use Psr\Http\Message\RequestInterface as Request;
 /**
  * @author Paulus Gandung Prakosa <gandung@infradead.org>
  */
-class RecapZakatController extends BaseController
+class RecapInfaqController extends BaseController
 {
     use ControllerTrait;
 
@@ -27,21 +27,21 @@ class RecapZakatController extends BaseController
             RoleType::TASHARUF_ADMIN
         ]
     )]
-    #[Route('/recap/{oid}/year/{year}/zakat', method: 'GET')]
+    #[Route('/recap/{oid}/year/{year}/infaq', method: 'GET')]
     #[OpenApi\Get(
-        path: '/recap/{oid}/year/{year}/zakat',
+        path: '/recap/{oid}/year/{year}/infaq',
         tags: ['Recap'],
         responses: [
             new OpenApi\Response(response: 200, description: 'OK'),
             new OpenApi\Response(response: 404, description: 'Not Found')
         ]
     )]
-    public function getZakatRecap(
+    public function getInfaqRecap(
         Request $request,
         Response $response,
         array $args
     ): Response {
-        $repository = new RecapZakatRepository(
+        $repository = new RecapInfaqRepository(
             $this->getContainer()->get('mapper'),
             $request
         );
