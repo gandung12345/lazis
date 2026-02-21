@@ -57,7 +57,7 @@ trait SchemaTrait
     /**
      * @var string
      */
-    private const string PHONE_NUMBER_PATTERN = '/^(\+62|0)([0-9]{10,13})$/';
+    private const string PHONE_NUMBER_PATTERN = '/^(\+62|0|62)([0-9]{10,13})$/';
 
     /**
      * @var string

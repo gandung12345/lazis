@@ -142,37 +142,9 @@ class OrganizationController extends BaseController
             $request
         );
 
-        try {
-            $result = $this->registerNumberToGateway($request, $schema->getPhoneNumber());
-        } catch (Throwable $e) {
-            $builder = new ResponseBuilder();
-            $builder = $builder
-                ->withPair('code', HttpCode::BAD_REQUEST)
-                ->withPair('message', sprintf('Cannot register phone number \'%s\'.', $schema->getPhoneNumber()));
-
-            return $this->json($response, $builder->build(), HttpCode::BAD_REQUEST);
-        }
+        $this->registerNumberToGateway($request, $schema->getPhoneNumber());
 
         $hydratedEntity = $repository->create($schema);
-
-        if (null === $result) {
-            $builder = new ResponseBuilder();
-            $builder = $builder
-                ->withPair('code', HttpCode::INTERNAL_SERVER_ERROR)
-                ->withPair('message', 'Invalid whatsapp gateway configuration.');
-
-            return $this->json($response, $builder->build(), HttpCode::INTERNAL_SERVER_ERROR);
-        }
-
-        // this branch logic below is opaque: this shit will usable later (if needed).
-        /*if ($result->getStatusCode() !== 200) {
-            $builder = new ResponseBuilder();
-            $builder = $builder
-                ->withPair('code', $result->getStatusCode())
-                ->withPair('message', $result->getReasonPhrase());
-
-            return $this->json($response, $builder->build(), $result->getStatusCode());
-        }*/
 
         return $this->json($response, $hydratedEntity, HttpCode::CREATED);
     }
@@ -560,7 +532,7 @@ class OrganizationController extends BaseController
         return $this->json($response, $entity, HttpCode::CREATED);
     }
 
-    private function registerNumberToGateway(Request $request, string $phoneNumber): Response
+    private function registerNumberToGateway(Request $request, string $phoneNumber): array
     {
         $dutaWhatsappRepository = new DutaWhatsappRepository(
             $this->getContainer()->get('mapper'),
