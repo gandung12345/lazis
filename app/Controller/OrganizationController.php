@@ -147,10 +147,10 @@ class OrganizationController extends BaseController
         } catch (Throwable $e) {
             $builder = new ResponseBuilder();
             $builder = $builder
-                ->withPair('code', $e->getCode())
-                ->withPair('message', $e->getMessage());
+                ->withPair('code', HttpCode::BAD_REQUEST)
+                ->withPair('message', sprintf('Cannot register phone number \'%s\'.', $schema->getPhoneNumber()));
 
-            return $this->json($response, $builder->build(), $e->getCode());
+            return $this->json($response, $builder->build(), HttpCode::BAD_REQUEST);
         }
 
         $hydratedEntity = $repository->create($schema);
@@ -164,14 +164,15 @@ class OrganizationController extends BaseController
             return $this->json($response, $builder->build(), HttpCode::INTERNAL_SERVER_ERROR);
         }
 
-        if ($result->getStatusCode() !== 200) {
+        // this branch logic below is opaque: this shit will usable later (if needed).
+        /*if ($result->getStatusCode() !== 200) {
             $builder = new ResponseBuilder();
             $builder = $builder
                 ->withPair('code', $result->getStatusCode())
                 ->withPair('message', $result->getReasonPhrase());
 
             return $this->json($response, $builder->build(), $result->getStatusCode());
-        }
+        }*/
 
         return $this->json($response, $hydratedEntity, HttpCode::CREATED);
     }
@@ -582,9 +583,9 @@ class OrganizationController extends BaseController
 
         try {
             $deviceInfoResponse = $dutaWhatsappGateway->deviceInfo($deviceInfo);
-            $responseCode = $deviceInfoResponse->getStatusCode();
+            $responseCode = HttpCode::OK;
         } catch (Throwable $e) {
-            $responseCode = $e->getCode();
+            $responseCode = HttpCode::BAD_REQUEST;
         }
 
         if ($responseCode === HttpCode::BAD_REQUEST) {
