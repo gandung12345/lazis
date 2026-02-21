@@ -532,7 +532,7 @@ class OrganizationController extends BaseController
         return $this->json($response, $entity, HttpCode::CREATED);
     }
 
-    private function registerNumberToGateway(Request $request, string $phoneNumber): array
+    private function registerNumberToGateway(Request $request, string $phoneNumber): Response
     {
         $dutaWhatsappRepository = new DutaWhatsappRepository(
             $this->getContainer()->get('mapper'),
