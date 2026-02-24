@@ -126,10 +126,12 @@ class RecapInfaqRepository extends AbstractRepository
             ->from($entity->getDqlName(), $entity->getQueryBuilderAlias())
             ->where($queryBuilder->expr()->andX(
                 $queryBuilder->expr()->eq(
-                    sprintf('%s.scope = ?1', $entity->getQueryBuilderAlias())
+                    sprintf('%s.scope', $entity->getQueryBuilderAlias()),
+                    '?1'
                 ),
                 $queryBuilder->expr()->eq(
-                    sprintf('%s.district = ?2', $entity->getQueryBuilderAlias())
+                    sprintf('%s.district', $entity->getQueryBuilderAlias()),
+                    '?2'
                 )
             ))
             ->setParameter(1, ScopeType::TWIG)
@@ -158,14 +160,17 @@ class RecapInfaqRepository extends AbstractRepository
             ->where($queryBuilder->expr()->andX(
                 $queryBuilder->expr()->orX(
                     $queryBuilder->expr()->eq(
-                        sprintf('%s.scope = ?1', $entity->getQueryBuilderAlias())
+                        sprintf('%s.scope', $entity->getQueryBuilderAlias()),
+                        '?1'
                     ),
                     $queryBuilder->expr()->eq(
-                        sprintf('%s.scope = ?2', $entity->getQueryBuilderAlias())
+                        sprintf('%s.scope', $entity->getQueryBuilderAlias()),
+                        '?2'
                     )
                 ),
                 $queryBuilder->expr()->eq(
-                    sprintf('%s.district = ?3', $entity->getQueryBuilderAlias())
+                    sprintf('%s.district', $entity->getQueryBuilderAlias()),
+                    '?3'
                 )
             ))
             ->setParameter(1, ScopeType::BRANCH_REPRESENTATIVE)
