@@ -44,6 +44,7 @@ class RecapInfaqRepository extends AbstractRepository
 
         if (null === $organization) {
             throw new RepositoryException(
+                $this->getRequest(),
                 sprintf('Organization with id %s not found.', $oid)
             );
         }
