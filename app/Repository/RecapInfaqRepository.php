@@ -14,7 +14,7 @@ use Lazis\Api\Entity\Organization;
 use Lazis\Api\Entity\Organizer;
 use Lazis\Api\Entity\Transaction;
 use Lazis\Api\Entity\Wallet;
-use Lazis\Api\Repository\OrganizationRepository;
+use Lazis\Api\Repository\Exception\RepositoryException;
 use Lazis\Api\Type\InfaqProgram as InfaqProgramType;
 use Lazis\Api\Type\Scope as ScopeType;
 use Lazis\Api\Type\ZakatDistribution as ZakatDistributionType;

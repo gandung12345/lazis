@@ -12,6 +12,7 @@ use Lazis\Api\Entity\Donee;
 use Lazis\Api\Entity\InfaqDistribution;
 use Lazis\Api\Entity\Organization;
 use Lazis\Api\Entity\Organizer;
+use Lazis\Api\Repository\Exception\RepositoryException;
 use Lazis\Api\Type\Dskl as DsklType;
 use Lazis\Api\Type\Scope as ScopeType;
 use Lazis\Api\Type\Wallet as WalletType;
