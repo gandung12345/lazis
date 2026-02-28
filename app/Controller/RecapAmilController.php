@@ -49,7 +49,6 @@ class RecapAmilController extends BaseController
         try {
             $result = $repository->getRecap($args['oid'], $args['year']);
         } catch (Throwable $e) {
-            dd($e);
             return $this->handleRepositoryException($e, $response);
         }
 
