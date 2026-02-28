@@ -13,6 +13,7 @@ use Lazis\Api\Entity\Organization;
 use Lazis\Api\Entity\Organizer;
 use Lazis\Api\Entity\Transaction;
 use Lazis\Api\Entity\Wallet;
+use Lazis\Api\Repository\Exception\RepositoryException;
 use Lazis\Api\Type\AmilFunding as AmilFundingType;
 use Lazis\Api\Type\AmilFundingDistribution as AmilFundingDistributionType;
 use Lazis\Api\Type\Scope as ScopeType;
