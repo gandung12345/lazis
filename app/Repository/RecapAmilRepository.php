@@ -7,34 +7,25 @@ namespace Lazis\Api\Repository;
 use DateTimeImmutable;
 use Doctrine\ORM\Query\Expr;
 use Lazis\Api\Entity\Amil;
-use Lazis\Api\Entity\Donee;
+use Lazis\Api\Entity\AmilFunding;
+use Lazis\Api\Entity\AmilFundingUsage;
 use Lazis\Api\Entity\Organization;
 use Lazis\Api\Entity\Organizer;
 use Lazis\Api\Entity\Transaction;
 use Lazis\Api\Entity\Wallet;
-use Lazis\Api\Entity\Zakat;
-use Lazis\Api\Entity\ZakatDistribution;
-use Lazis\Api\Repository\Exception\RepositoryException;
-use Lazis\Api\Type\Asnaf as AsnafType;
-use Lazis\Api\Type\Muzakki as MuzakkiType;
+use Lazis\Api\Type\AmilFunding as AmilFundingType;
+use Lazis\Api\Type\AmilFundingDistribution as AmilFundingDistributionType;
 use Lazis\Api\Type\Scope as ScopeType;
-use Lazis\Api\Type\Zakat as ZakatType;
-use Lazis\Api\Type\ZakatDistribution as ZakatDistributionType;
 use Schnell\Entity\EntityInterface;
 use Schnell\Repository\AbstractRepository;
 
 /**
  * @author Paulus Gandung Prakosa <gandung@infradead.org>
  */
-class RecapZakatRepository extends AbstractRepository
+class RecapAmilRepository extends AbstractRepository
 {
     use RepositoryTrait;
 
-    /**
-     * @param string $oid
-     * @param string $year
-     * @return array
-     */
     public function getRecap(string $oid, string $year): array
     {
         $organizationRepository = new OrganizationRepository(
@@ -55,53 +46,55 @@ class RecapZakatRepository extends AbstractRepository
 
         $result = [
             'year' => $year,
-            'zakatAggregation' => [
-                'zakatMaalFundingPersonal' => 0,
-                'zakatMaalFundingCollective' => 0,
-                'zakatFitrFunding' => 0
+            'initialFund' => 0,
+            'aggregation' => [
+                'zakatAllocation' => 0,
+                'infaqAllocation' => 0,
+                'dsklAllocation' => 0,
+                'other' => 0,
+                'grant' => 0
             ],
-            'asnafBasedZakatDistribution' => [
-                'fakir' => 0,
-                'poor' => 0,
-                'fisabilillah' => 0,
-                'ibnSabil' => 0,
-                'gharim' => 0,
-                'mualaf' => 0,
-                'amilCut' => 0
+            'distribution' => [
+                'socializationAndEducation' => 0,
+                'employeeExpense' => 0,
+                'officeUtilitiesFund' => 0,
+                'officeStationeryFund' => 0,
+                'internetFund' => 0,
+                'telephoneFund' => 0,
+                'electricityFund' => 0,
+                'transportationFund' => 0,
+                'communicationFund' => 0,
+                'officeUtilitiesMaintenanceFund' => 0,
+                'consumptionFund' => 0,
+                'insuranceFund' => 0,
+                'generalAndAdministrationFund' => 0,
+                'depreciationExpense' => 0
             ],
-            'programBasedDistribution' => [
-                'nuCareSmart' => 0,
-                'nuCareEmpowered' => 0,
-                'nuCareHealthy' => 0,
-                'nuCareGreen' => 0,
-                'nuCarePeace' => 0
-            ],
-            'zakatCalculatedFund' => 0
+            'calculatedAmilFund' => 0
         ];
 
-        // zakat aggregation
-        $this->fetchZakatAggregationForMaalFundingPersonal($year, $organizationList, $result);
-        $this->fetchZakatAggregationForMaalFundingCollective($year, $organizationList, $result);
-        $this->fetchZakatAggregationForFitrFunding($year, $organizationList, $result);
+        // initial fund
+        $this->fetchInitialFund($year, $organizationList, $result);
 
-        // asnaf based zakat distribution
-        $this->fetchAsnafBasedZakatDistributionForFakir($year, $organizationList, $result);
-        $this->fetchAsnafbasedZakatDistributionForPoor($year, $organizationList, $result);
-        $this->fetchAsnafBasedZakatDistributionForFisabilillah($year, $organizationList, $result);
-        $this->fetchAsnafBasedZakatDistributionForIbnSabil($year, $organizationList, $result);
-        $this->fetchAsnafBasedZakatDistributionForGharim($year, $organizationList, $result);
-        $this->fetchAsnafBasedZakatDistributionForMualaf($year, $organizationList, $result);
-        $this->fetchAsnafBasedZakatDistributionForAmilCut($year, $organizationList, $result);
+        // distribution
+        $this->fetchDistributionForSocializationAndEducation($year, $organizationList, $result);
+        $this->fetchDistributionForEmployeeExpense($year, $organizationList, $result);
+        $this->fetchDistributionForOfficeUtilitiesFund($year, $organizationList, $result);
+        $this->fetchDistributionForOfficeStationeryFund($year, $organizationList, $result);
+        $this->fetchDistributionForInternetFund($year, $organizationList, $result);
+        $this->fetchDistributionForTelephoneFund($year, $organizationList, $result);
+        $this->fetchDistributionForElectricityFund($year, $organizationList, $result);
+        $this->fetchDistributionForTransportationFund($year, $organizationList, $result);
+        $this->fetchDistributionForCommunicationFund($year, $organizationList, $result);
+        $this->fetchDistributionForOfficeUtilitiesMaintenanceFund($year, $organizationList, $result);
+        $this->fetchDistributionForConsumptionFund($year, $organizationList, $result);
+        $this->fetchDistributionForInsuranceFund($year, $organizationList, $result);
+        $this->fetchDistributionForGeneralAndAdministrationFund($year, $organizationList, $result);
+        $this->fetchDistributionForDepreciationExpense($year, $organizationList, $result);
 
-        // program based distribution
-        $this->fetchProgramBasedZakatDistributionForNuCareSmart($year, $organizationList, $result);
-        $this->fetchProgramBasedZakatDistributionForNuCareEmpowered($year, $organizationList, $result);
-        $this->fetchProgramBasedZakatDistributionForNuCareHealthy($year, $organizationList, $result);
-        $this->fetchProgramBasedZakatDistributionForNuCareGreen($year, $organizationList, $result);
-        $this->fetchProgramBasedZakatDistributionForNuCarePeace($year, $organizationList, $result);
+        // amil final calculated fund
+        $this->calculateFinalAmilFund($result);
 
-        // calculate total zakat fund
-        $this->calculateTotalZakatFunding($result);
         return $result;
     }
 
@@ -170,7 +163,7 @@ class RecapZakatRepository extends AbstractRepository
         $result = $queryBuilder
             ->select($entity->getQueryBuilderAlias())
             ->from($entity->getDqlName(), $entity->getQueryBuilderAlias())
-            ->where($queryBuilder->expr()->andX(
+            ->where($queryBuilder->expr->andX(
                 $queryBuilder->expr()->orX(
                     $queryBuilder->expr()->eq(
                         sprintf('%s.scope', $entity->getQueryBuilderAlias()),
@@ -200,92 +193,23 @@ class RecapZakatRepository extends AbstractRepository
     /**
      * @internal
      *
+     * @param string $year
      * @param array $organizationList
      * @param array &$result
      * @return void
      */
-    private function fetchZakatAggregationForMaalFundingPersonal(
+    private function fetchInitialFund(
         string $year,
         array $organizationList,
         array &$result
     ): void {
-        $entities = [
-            new Organization(), new Organizer(),
-            new Amil(), new Zakat()
-        ];
+        $this->fetchAggregationFromZakatAllocation($year, $organizationList, $result);
+        $this->fetchAggregationFromInfaqAllocation($year, $organizationList, $result);
+        $this->fetchAggregationFromDsklAllocation($year, $organizationList, $result);
+        $this->fetchAggregationFromOtherAllocation($year, $organizationList, $result);
+        $this->fetchAggregationFromGrantAllocation($year, $organizationList, $result);
 
-        $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
-        $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
-
-        $entityManager = $this->getMapper()->getEntityManager();
-        $queryBuilder = $entityManager->createQueryBuilder();
-
-        foreach ($organizationList as $organization) {
-            $zakatList = $queryBuilder
-                ->select($entities[3]->getQueryBuilderAlias())
-                ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
-                ->join(
-                    $entities[1]->getDqlName(),
-                    $entities[1]->getQueryBuilderAlias(),
-                    Expr\Join::WITH,
-                    sprintf(
-                        '%s.id = %s.organization',
-                        $entities[0]->getQueryBuilderAlias(),
-                        $entities[1]->getQueryBuilderAlias()
-                    )
-                )
-                ->join(
-                    $entities[2]->getDqlName(),
-                    $entities[2]->getQueryBuilderAlias(),
-                    Expr\Join::WITH,
-                    sprintf(
-                        '%s.id = %s.organizer',
-                        $entities[1]->getQueryBuilderAlias(),
-                        $entities[2]->getQueryBuilderAlias()
-                    )
-                )
-                ->join(
-                    $entities[3]->getDqlName(),
-                    $entities[3]->getQueryBuilderAlias(),
-                    Expr\Join::WITH,
-                    sprintf(
-                        '%s.id = %s.amil',
-                        $entities[2]->getQueryBuilderAlias(),
-                        $entities[3]->getQueryBuilderAlias()
-                    )
-                )
-                ->where($queryBuilder->expr()->andX(
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
-                        '?1'
-                    ),
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.muzakki', $entities[3]->getQueryBuilderAlias()),
-                        '?2'
-                    ),
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.type', $entities[3]->getQueryBuilderAlias()),
-                        '?3'
-                    )
-                ))
-                ->andWhere(sprintf(
-                    '%s.date BETWEEN ?4 AND ?5',
-                    $entities[3]->getQueryBuilderAlias()
-                ))
-                ->setParameter(1, $organization->getId())
-                ->setParameter(2, MuzakkiType::PERSONAL)
-                ->setParameter(3, ZakatType::MAAL)
-                ->setParameter(4, $startTz)
-                ->setParameter(5, $endTz)
-                ->getQuery()
-                ->getResult();
-
-            foreach ($zakatList as $zakatObj) {
-                $result['zakatAggregation']['zakatMaalFundingPersonal'] += abs($zakatObj->getAmount());
-            }
-        }
-
-        return;
+        $result['initialFund'] = abs(array_sum(array_values($result['aggregation'])));
     }
 
     /**
@@ -296,619 +220,21 @@ class RecapZakatRepository extends AbstractRepository
      * @param array &$result
      * @return void
      */
-    private function fetchZakatAggregationForMaalFundingCollective(
-        string $year,
-        array $organizationList,
-        array &$result
-    ): void {
-        $entities = [
-            new Organization(), new Organizer(),
-            new Amil(), new Zakat()
-        ];
-
-        $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
-        $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
-
-        $entityManager = $this->getMapper()->getEntityManager();
-        $queryBuilder = $entityManager->createQueryBuilder();
-
-        foreach ($organizationList as $organization) {
-            $zakatList = $queryBuilder
-                ->select($entities[3]->getQueryBuilderAlias())
-                ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
-                ->join(
-                    $entities[1]->getDqlName(),
-                    $entities[1]->getQueryBuilderAlias(),
-                    Expr\Join::WITH,
-                    sprintf(
-                        '%s.id = %s.organization',
-                        $entities[0]->getQueryBuilderAlias(),
-                        $entities[1]->getQueryBuilderAlias()
-                    )
-                )
-                ->join(
-                    $entities[2]->getDqlName(),
-                    $entities[2]->getQueryBuilderAlias(),
-                    Expr\Join::WITH,
-                    sprintf(
-                        '%s.id = %s.organizer',
-                        $entities[1]->getQueryBuilderAlias(),
-                        $entities[2]->getQueryBuilderAlias()
-                    )
-                )
-                ->join(
-                    $entities[3]->getDqlName(),
-                    $entities[3]->getQueryBuilderAlias(),
-                    Expr\Join::WITH,
-                    sprintf(
-                        '%s.id = %s.amil',
-                        $entities[2]->getQueryBuilderAlias(),
-                        $entities[3]->getQueryBuilderAlias()
-                    )
-                )
-                ->where($queryBuilder->expr()->andX(
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
-                        '?1'
-                    ),
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.muzakki', $entities[3]->getQueryBuilderAlias()),
-                        '?2'
-                    ),
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.type', $entities[3]->getQueryBuilderAlias()),
-                        '?3'
-                    )
-                ))
-                ->andWhere(sprintf(
-                    '%s.date BETWEEN ?4 AND ?5',
-                    $entities[3]->getQueryBuilderAlias()
-                ))
-                ->setParameter(1, $organization->getId())
-                ->setParameter(2, MuzakkiType::COLLECTIVE)
-                ->setParameter(3, ZakatType::MAAL)
-                ->setParameter(4, $startTz)
-                ->setParameter(5, $endTz)
-                ->getQuery()
-                ->getResult();
-
-            foreach ($zakatList as $zakatObj) {
-                $result['zakatAggregation']['zakatMaalFundingCollective'] += abs($zakatObj->getAmount());
-            }
-        }
-
-        return;
-    }
-
-    /**
-     * @internal
-     *
-     * @param string $year
-     * @param array $organizationList
-     * @param array &$result
-     * @return void
-     */
-    private function fetchZakatAggregationForFitrFunding(
-        string $year,
-        array $organizationList,
-        array &$result
-    ): void {
-        $entities = [
-            new Organization(), new Organizer(),
-            new Amil(), new Zakat()
-        ];
-
-        $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
-        $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
-
-        $entityManager = $this->getMapper()->getEntityManager();
-        $queryBuilder = $entityManager->createQueryBuilder();
-
-        foreach ($organizationList as $organization) {
-            $zakatList = $queryBuilder
-                ->select($entities[3]->getQueryBuilderAlias())
-                ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
-                ->join(
-                    $entities[1]->getDqlName(),
-                    $entities[1]->getQueryBuilderAlias(),
-                    Expr\Join::WITH,
-                    sprintf(
-                        '%s.id = %s.organization',
-                        $entities[0]->getQueryBuilderAlias(),
-                        $entities[1]->getQueryBuilderAlias()
-                    )
-                )
-                ->join(
-                    $entities[2]->getDqlName(),
-                    $entities[2]->getQueryBuilderAlias(),
-                    Expr\Join::WITH,
-                    sprintf(
-                        '%s.id = %s.organizer',
-                        $entities[1]->getQueryBuilderAlias(),
-                        $entities[2]->getQueryBuilderAlias()
-                    )
-                )
-                ->join(
-                    $entities[3]->getDqlName(),
-                    $entities[3]->getQueryBuilderAlias(),
-                    Expr\Join::WITH,
-                    sprintf(
-                        '%s.id = %s.amil',
-                        $entities[2]->getQueryBuilderAlias(),
-                        $entities[3]->getQueryBuilderAlias()
-                    )
-                )
-                ->where($queryBuilder->expr()->andX(
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
-                        '?1'
-                    ),
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.type', $entities[3]->getQueryBuilderAlias()),
-                        '?2'
-                    )
-                ))
-                ->andWhere(sprintf(
-                    '%s.date BETWEEN ?3 AND ?4',
-                    $entities[3]->getQueryBuilderAlias()
-                ))
-                ->setParameter(1, $organization->getId())
-                ->setParameter(2, ZakatType::FITRAH)
-                ->setParameter(3, $startTz)
-                ->setParameter(4, $endTz)
-                ->getQuery()
-                ->getResult();
-
-            foreach ($zakatList as $zakatObj) {
-                $result['zakatAggregation']['zakatFitrFunding'] += abs($zakatObj->getAmount());
-            }
-        }
-
-        return;
-    }
-
-    /**
-     * @internal
-     *
-     * @param string $year
-     * @param array $organizationList
-     * @param array &$result
-     * @return void
-     */
-    private function fetchAsnafBasedZakatDistributionForFakir(
-        string $year,
-        array $organizationList,
-        array &$result
-    ): void {
-        $entities = [new Organization(), new Donee(), new ZakatDistribution()];
-        $entityManager = $this->getMapper()->getEntityManager();
-        $queryBuilder = $entityManager->createQueryBuilder();
-
-        $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
-        $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
-
-        foreach ($organizationList as $organization) {
-            $zakatDistributionList = $queryBuilder
-                ->select($entities[2]->getQueryBuilderAlias())
-                ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
-                ->join(
-                    $entities[1]->getDqlName(),
-                    $entities[1]->getQueryBuilderAlias(),
-                    Expr\Join::WITH,
-                    sprintf(
-                        '%s.id = %s.organization',
-                        $entities[0]->getQueryBuilderAlias(),
-                        $entities[1]->getQueryBuilderAlias()
-                    )
-                )
-                ->join(
-                    $entities[2]->getDqlName(),
-                    $entities[2]->getQueryBuilderAlias(),
-                    Expr\Join::WITH,
-                    sprintf(
-                        '%s.id = %s.donee',
-                        $entities[1]->getQueryBuilderAlias(),
-                        $entities[2]->getQueryBuilderAlias()
-                    )
-                )
-                ->where($queryBuilder->expr()->andX(
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
-                        '?1'
-                    ),
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.asnaf', $entities[1]->getQueryBuilderAlias()),
-                        '?2'
-                    )
-                ))
-                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[2]->getQueryBuilderAlias()))
-                ->setParameter(1, $organization->getId())
-                ->setParameter(2, AsnafType::FAKIR)
-                ->setParameter(3, $startTz)
-                ->setParameter(4, $endTz)
-                ->getQuery()
-                ->getResult();
-
-            foreach ($zakatDistributionList as $zakatDistribution) {
-                $result['asnafBasedZakatDistribution']['fakir'] += abs($zakatDistribution->getAmount());
-            }
-        }
-
-        return;
-    }
-
-    /**
-     * @internal
-     *
-     * @param string $year
-     * @param array $organizationList
-     * @param array &$result
-     * @return void
-     */
-    private function fetchAsnafbasedZakatDistributionForPoor(
-        string $year,
-        array $organizationList,
-        array &$result
-    ): void {
-        $entities = [new Organization(), new Donee(), new ZakatDistribution()];
-        $entityManager = $this->getMapper()->getEntityManager();
-        $queryBuilder = $entityManager->createQueryBuilder();
-
-        $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
-        $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
-
-        foreach ($organizationList as $organization) {
-            $zakatDistributionList = $queryBuilder
-                ->select($entities[2]->getQueryBuilderAlias())
-                ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
-                ->join(
-                    $entities[1]->getDqlName(),
-                    $entities[1]->getQueryBuilderAlias(),
-                    Expr\Join::WITH,
-                    sprintf(
-                        '%s.id = %s.organization',
-                        $entities[0]->getQueryBuilderAlias(),
-                        $entities[1]->getQueryBuilderAlias()
-                    )
-                )
-                ->join(
-                    $entities[2]->getDqlName(),
-                    $entities[2]->getQueryBuilderAlias(),
-                    Expr\Join::WITH,
-                    sprintf(
-                        '%s.id = %s.donee',
-                        $entities[1]->getQueryBuilderAlias(),
-                        $entities[2]->getQueryBuilderAlias()
-                    )
-                )
-                ->where($queryBuilder->expr()->andX(
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
-                        '?1'
-                    ),
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.asnaf', $entities[1]->getQueryBuilderAlias()),
-                        '?2'
-                    )
-                ))
-                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[2]->getQueryBuilderAlias()))
-                ->setParameter(1, $organization->getId())
-                ->setParameter(2, AsnafType::POOR)
-                ->setParameter(3, $startTz)
-                ->setParameter(4, $endTz)
-                ->getQuery()
-                ->getResult();
-
-            foreach ($zakatDistributionList as $zakatDistribution) {
-                $result['asnafBasedZakatDistribution']['poor'] += abs($zakatDistribution->getAmount());
-            }
-        }
-
-        return;
-    }
-
-    /**
-     * @internal
-     *
-     * @param string $year
-     * @param array $organizationList
-     * @param array &$result
-     * @return void
-     */
-    private function fetchAsnafBasedZakatDistributionForFisabilillah(
-        string $year,
-        array $organizationList,
-        array &$result
-    ): void {
-        $entities = [new Organization(), new Donee(), new ZakatDistribution()];
-        $entityManager = $this->getMapper()->getEntityManager();
-        $queryBuilder = $entityManager->createQueryBuilder();
-
-        $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
-        $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
-
-        foreach ($organizationList as $organization) {
-            $zakatDistributionList = $queryBuilder
-                ->select($entities[2]->getQueryBuilderAlias())
-                ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
-                ->join(
-                    $entities[1]->getDqlName(),
-                    $entities[1]->getQueryBuilderAlias(),
-                    Expr\Join::WITH,
-                    sprintf(
-                        '%s.id = %s.organization',
-                        $entities[0]->getQueryBuilderAlias(),
-                        $entities[1]->getQueryBuilderAlias()
-                    )
-                )
-                ->join(
-                    $entities[2]->getDqlName(),
-                    $entities[2]->getQueryBuilderAlias(),
-                    Expr\Join::WITH,
-                    sprintf(
-                        '%s.id = %s.donee',
-                        $entities[1]->getQueryBuilderAlias(),
-                        $entities[2]->getQueryBuilderAlias()
-                    )
-                )
-                ->where($queryBuilder->expr()->andX(
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
-                        '?1'
-                    ),
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.asnaf', $entities[1]->getQueryBuilderAlias()),
-                        '?2'
-                    )
-                ))
-                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[2]->getQueryBuilderAlias()))
-                ->setParameter(1, $organization->getId())
-                ->setParameter(2, AsnafType::FISABILILLAH)
-                ->setParameter(3, $startTz)
-                ->setParameter(4, $endTz)
-                ->getQuery()
-                ->getResult();
-
-            foreach ($zakatDistributionList as $zakatDistribution) {
-                $result['asnafBasedZakatDistribution']['fisabilillah'] += abs($zakatDistribution->getAmount());
-            }
-        }
-
-        return;
-    }
-
-    /**
-     * @internal
-     *
-     * @param string $year
-     * @param array $organizationList
-     * @param array &$result
-     * @return void
-     */
-    private function fetchAsnafBasedZakatDistributionForIbnSabil(
-        string $year,
-        array $organizationList,
-        array &$result
-    ): void {
-        $entities = [new Organization(), new Donee(), new ZakatDistribution()];
-        $entityManager = $this->getMapper()->getEntityManager();
-        $queryBuilder = $entityManager->createQueryBuilder();
-
-        $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
-        $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
-
-        foreach ($organizationList as $organization) {
-            $zakatDistributionList = $queryBuilder
-                ->select($entities[2]->getQueryBuilderAlias())
-                ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
-                ->join(
-                    $entities[1]->getDqlName(),
-                    $entities[1]->getQueryBuilderAlias(),
-                    Expr\Join::WITH,
-                    sprintf(
-                        '%s.id = %s.organization',
-                        $entities[0]->getQueryBuilderAlias(),
-                        $entities[1]->getQueryBuilderAlias()
-                    )
-                )
-                ->join(
-                    $entities[2]->getDqlName(),
-                    $entities[2]->getQueryBuilderAlias(),
-                    Expr\Join::WITH,
-                    sprintf(
-                        '%s.id = %s.donee',
-                        $entities[1]->getQueryBuilderAlias(),
-                        $entities[2]->getQueryBuilderAlias()
-                    )
-                )
-                ->where($queryBuilder->expr()->andX(
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
-                        '?1'
-                    ),
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.asnaf', $entities[1]->getQueryBuilderAlias()),
-                        '?2'
-                    )
-                ))
-                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[2]->getQueryBuilderAlias()))
-                ->setParameter(1, $organization->getId())
-                ->setParameter(2, AsnafType::IBNU_SABIL)
-                ->setParameter(3, $startTz)
-                ->setParameter(4, $endTz)
-                ->getQuery()
-                ->getResult();
-
-            foreach ($zakatDistributionList as $zakatDistribution) {
-                $result['asnafBasedZakatDistribution']['ibnSabil'] += abs($zakatDistribution->getAmount());
-            }
-        }
-
-        return;
-    }
-
-    /**
-     * @internal
-     *
-     * @param string $year
-     * @param array $organizationList
-     * @param array &$result
-     * @return void
-     */
-    private function fetchAsnafBasedZakatDistributionForGharim(
-        string $year,
-        array $organizationList,
-        array &$result
-    ): void {
-        $entities = [new Organization(), new Donee(), new ZakatDistribution()];
-        $entityManager = $this->getMapper()->getEntityManager();
-        $queryBuilder = $entityManager->createQueryBuilder();
-
-        $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
-        $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
-
-        foreach ($organizationList as $organization) {
-            $zakatDistributionList = $queryBuilder
-                ->select($entities[2]->getQueryBuilderAlias())
-                ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
-                ->join(
-                    $entities[1]->getDqlName(),
-                    $entities[1]->getQueryBuilderAlias(),
-                    Expr\Join::WITH,
-                    sprintf(
-                        '%s.id = %s.organization',
-                        $entities[0]->getQueryBuilderAlias(),
-                        $entities[1]->getQueryBuilderAlias()
-                    )
-                )
-                ->join(
-                    $entities[2]->getDqlName(),
-                    $entities[2]->getQueryBuilderAlias(),
-                    Expr\Join::WITH,
-                    sprintf(
-                        '%s.id = %s.donee',
-                        $entities[1]->getQueryBuilderAlias(),
-                        $entities[2]->getQueryBuilderAlias()
-                    )
-                )
-                ->where($queryBuilder->expr()->andX(
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
-                        '?1'
-                    ),
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.asnaf', $entities[1]->getQueryBuilderAlias()),
-                        '?2'
-                    )
-                ))
-                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[2]->getQueryBuilderAlias()))
-                ->setParameter(1, $organization->getId())
-                ->setParameter(2, AsnafType::GHARIM)
-                ->setParameter(3, $startTz)
-                ->setParameter(4, $endTz)
-                ->getQuery()
-                ->getResult();
-
-            foreach ($zakatDistributionList as $zakatDistribution) {
-                $result['asnafBasedZakatDistribution']['gharim'] += abs($zakatDistribution->getAmount());
-            }
-        }
-
-        return;
-    }
-
-    /**
-     * @internal
-     *
-     * @param string $year
-     * @param array $organizationList
-     * @param array &$result
-     * @return void
-     */
-    private function fetchAsnafBasedZakatDistributionForMualaf(
-        string $year,
-        array $organizationList,
-        array &$result
-    ): void {
-        $entities = [new Organization(), new Donee(), new ZakatDistribution()];
-        $entityManager = $this->getMapper()->getEntityManager();
-        $queryBuilder = $entityManager->createQueryBuilder();
-
-        $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
-        $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
-
-        foreach ($organizationList as $organization) {
-            $zakatDistributionList = $queryBuilder
-                ->select($entities[2]->getQueryBuilderAlias())
-                ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
-                ->join(
-                    $entities[1]->getDqlName(),
-                    $entities[1]->getQueryBuilderAlias(),
-                    Expr\Join::WITH,
-                    sprintf(
-                        '%s.id = %s.organization',
-                        $entities[0]->getQueryBuilderAlias(),
-                        $entities[1]->getQueryBuilderAlias()
-                    )
-                )
-                ->join(
-                    $entities[2]->getDqlName(),
-                    $entities[2]->getQueryBuilderAlias(),
-                    Expr\Join::WITH,
-                    sprintf(
-                        '%s.id = %s.donee',
-                        $entities[1]->getQueryBuilderAlias(),
-                        $entities[2]->getQueryBuilderAlias()
-                    )
-                )
-                ->where($queryBuilder->expr()->andX(
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
-                        '?1'
-                    ),
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.asnaf', $entities[1]->getQueryBuilderAlias()),
-                        '?2'
-                    )
-                ))
-                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[2]->getQueryBuilderAlias()))
-                ->setParameter(1, $organization->getId())
-                ->setParameter(2, AsnafType::MUALAF)
-                ->setParameter(3, $startTz)
-                ->setParameter(4, $endTz)
-                ->getQuery()
-                ->getResult();
-
-            foreach ($zakatDistributionList as $zakatDistribution) {
-                $result['asnafBasedZakatDistribution']['mualaf'] += abs($zakatDistribution->getAmount());
-            }
-        }
-
-        return;
-    }
-
-    /**
-     * @internal
-     *
-     * @param string $year
-     * @param array $organizationList
-     * @param array &$result
-     * @return void
-     */
-    private function fetchAsnafBasedZakatDistributionForAmilCut(
+    private function fetchAggregationFromZakatAllocation(
         string $year,
         array $organizationList,
         array &$result
     ): void {
         $entities = [new Organization(), new Wallet(), new Transaction()];
-        $entityManager = $this->getMapper()->getEntityManager();
-        $queryBuilder = $entityManager->createQueryBuilder();
 
         $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
         $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
 
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+
         foreach ($organizationList as $organization) {
-            $zakatDistributionList = $queryBuilder
+            $amilFundingList = $queryBuilder
                 ->select($entities[2]->getQueryBuilderAlias())
                 ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
                 ->join(
@@ -931,11 +257,9 @@ class RecapZakatRepository extends AbstractRepository
                         $entities[2]->getQueryBuilderAlias()
                     )
                 )
-                ->where($queryBuilder->expr()->andX(
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
-                        '?1'
-                    )
+                ->where($queryBuilder->expr()->eq(
+                    sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
+                    '?1'
                 ))
                 ->andWhere(sprintf('%s.description LIKE ?2', $entities[2]->getQueryBuilderAlias()))
                 ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[2]->getQueryBuilderAlias()))
@@ -946,8 +270,8 @@ class RecapZakatRepository extends AbstractRepository
                 ->getQuery()
                 ->getResult();
 
-            foreach ($zakatDistributionList as $zakatDistribution) {
-                $result['asnafBasedZakatDistribution']['amilCut'] += abs($zakatDistribution->getAmount());
+            foreach ($amilFundingList as $amilFunding) {
+                $result['aggregation']['zakatAllocation'] += abs($amilFunding->getAmount());
             }
         }
 
@@ -962,20 +286,21 @@ class RecapZakatRepository extends AbstractRepository
      * @param array &$result
      * @return void
      */
-    private function fetchProgramBasedZakatDistributionForNuCareSmart(
+    private function fetchAggregationFromInfaqAllocation(
         string $year,
         array $organizationList,
         array &$result
     ): void {
-        $entities = [new Organization(), new Donee(), new ZakatDistribution()];
-        $entityManager = $this->getMapper()->getEntityManager();
-        $queryBuilder = $entityManager->createQueryBuilder();
+        $entities = [new Organization(), new Wallet(), new Transaction()];
 
         $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
         $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
 
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+
         foreach ($organizationList as $organization) {
-            $zakatDistributionList = $queryBuilder
+            $amilFundingList = $queryBuilder
                 ->select($entities[2]->getQueryBuilderAlias())
                 ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
                 ->join(
@@ -993,31 +318,26 @@ class RecapZakatRepository extends AbstractRepository
                     $entities[2]->getQueryBuilderAlias(),
                     Expr\Join::WITH,
                     sprintf(
-                        '%s.id = %s.donee',
+                        '%s.id = %s.wallet',
                         $entities[1]->getQueryBuilderAlias(),
                         $entities[2]->getQueryBuilderAlias()
                     )
                 )
-                ->where($queryBuilder->expr()->andX(
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
-                        '?1'
-                    ),
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.program', $entities[2]->getQueryBuilderAlias()),
-                        '?2'
-                    )
+                ->where($queryBuilder->expr()->eq(
+                    sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
+                    '?1'
                 ))
+                ->andWhere(sprintf('%s.description LIKE ?2', $entities[2]->getQueryBuilderAlias()))
                 ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[2]->getQueryBuilderAlias()))
                 ->setParameter(1, $organization->getId())
-                ->setParameter(2, ZakatDistributionType::NU_CARE_SMART)
+                ->setParameter(2, '(infaq::amil-funding-cut)%')
                 ->setParameter(3, $startTz)
                 ->setParameter(4, $endTz)
                 ->getQuery()
                 ->getResult();
 
-            foreach ($zakatDistributionList as $zakatDistribution) {
-                $result['programBasedDistribution']['nuCareSmart'] += abs($zakatDistribution->getAmount());
+            foreach ($amilFundingList as $amilFunding) {
+                $result['aggregation']['infaqAllocation'] += abs($amilFunding->getAmount());
             }
         }
 
@@ -1032,20 +352,21 @@ class RecapZakatRepository extends AbstractRepository
      * @param array &$result
      * @return void
      */
-    private function fetchProgramBasedZakatDistributionForNuCareEmpowered(
+    private function fetchAggregationFromDsklAllocation(
         string $year,
         array $organizationList,
         array &$result
     ): void {
-        $entities = [new Organization(), new Donee(), new ZakatDistribution()];
-        $entityManager = $this->getMapper()->getEntityManager();
-        $queryBuilder = $entityManager->createQueryBuilder();
+        $entities = [new Organization(), new Wallet(), new Transaction()];
 
         $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
         $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
 
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+
         foreach ($organizationList as $organization) {
-            $zakatDistributionList = $queryBuilder
+            $amilFundingList = $queryBuilder
                 ->select($entities[2]->getQueryBuilderAlias())
                 ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
                 ->join(
@@ -1063,31 +384,26 @@ class RecapZakatRepository extends AbstractRepository
                     $entities[2]->getQueryBuilderAlias(),
                     Expr\Join::WITH,
                     sprintf(
-                        '%s.id = %s.donee',
+                        '%s.id = %s.wallet',
                         $entities[1]->getQueryBuilderAlias(),
                         $entities[2]->getQueryBuilderAlias()
                     )
                 )
-                ->where($queryBuilder->expr()->andX(
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
-                        '?1'
-                    ),
-                    $queryBuilder->expr()->eq(
-                        sprintf('%s.program', $entities[2]->getQueryBuilderAlias()),
-                        '?2'
-                    )
+                ->where($queryBuilder->expr()->eq(
+                    sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
+                    '?1'
                 ))
+                ->andWhere(sprintf('%s.description LIKE ?2', $entities[2]->getQueryBuilderAlias()))
                 ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[2]->getQueryBuilderAlias()))
                 ->setParameter(1, $organization->getId())
-                ->setParameter(2, ZakatDistributionType::NU_CARE_EMPOWERED)
+                ->setParameter(2, '(dskl::amil-funding-cut)%')
                 ->setParameter(3, $startTz)
                 ->setParameter(4, $endTz)
                 ->getQuery()
                 ->getResult();
 
-            foreach ($zakatDistributionList as $zakatDistribution) {
-                $result['programBasedDistribution']['nuCareEmpowered'] += abs($zakatDistribution->getAmount());
+            foreach ($amilFundingList as $amilFunding) {
+                $result['aggregation']['dsklAllocation'] += abs($amilFunding->getAmount());
             }
         }
 
@@ -1102,21 +418,25 @@ class RecapZakatRepository extends AbstractRepository
      * @param array &$result
      * @return void
      */
-    private function fetchProgramBasedZakatDistributionForNuCareHealthy(
+    private function fetchAggregationFromOtherAllocation(
         string $year,
         array $organizationList,
         array &$result
     ): void {
-        $entities = [new Organization(), new Donee(), new ZakatDistribution()];
-        $entityManager = $this->getMapper()->getEntityManager();
-        $queryBuilder = $entityManager->createQueryBuilder();
+        $entities = [
+            new Organization(), new Organizer(),
+            new Amil(), new AmilFunding()
+        ];
 
         $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
         $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
 
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+
         foreach ($organizationList as $organization) {
-            $zakatDistributionList = $queryBuilder
-                ->select($entities[2]->getQueryBuilderAlias())
+            $amilFundingList = $queryBuilder
+                ->select($entities[3]->getQueryBuilderAlias())
                 ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
                 ->join(
                     $entities[1]->getDqlName(),
@@ -1133,9 +453,19 @@ class RecapZakatRepository extends AbstractRepository
                     $entities[2]->getQueryBuilderAlias(),
                     Expr\Join::WITH,
                     sprintf(
-                        '%s.id = %s.donee',
+                        '%s.id = %s.organizer',
                         $entities[1]->getQueryBuilderAlias(),
                         $entities[2]->getQueryBuilderAlias()
+                    )
+                )
+                ->join(
+                    $entities[3]->getDqlName(),
+                    $entities[3]->getQueryBuilderAlias(),
+                    Expr\Join::WITH,
+                    sprintf(
+                        '%s.id = %s.amil',
+                        $entities[2]->getQueryBuilderAlias(),
+                        $entities[3]->getQueryBuilderAlias()
                     )
                 )
                 ->where($queryBuilder->expr()->andX(
@@ -1144,20 +474,20 @@ class RecapZakatRepository extends AbstractRepository
                         '?1'
                     ),
                     $queryBuilder->expr()->eq(
-                        sprintf('%s.program', $entities[2]->getQueryBuilderAlias()),
+                        sprintf('%s.fundingType', $entities[3]->getQueryBuilderAlias()),
                         '?2'
                     )
                 ))
-                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[2]->getQueryBuilderAlias()))
+                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[3]->getQueryBuilderAlias()))
                 ->setParameter(1, $organization->getId())
-                ->setParameter(2, ZakatDistributionType::NU_CARE_HEALTHY)
+                ->setParameter(2, AmilFundingType::OTHER_AMIL)
                 ->setParameter(3, $startTz)
                 ->setParameter(4, $endTz)
                 ->getQuery()
                 ->getResult();
 
-            foreach ($zakatDistributionList as $zakatDistribution) {
-                $result['programBasedDistribution']['nuCareHealthy'] += abs($zakatDistribution->getAmount());
+            foreach ($amilFundingList as $amilFunding) {
+                $result['aggregation']['other'] += abs($amilFunding->getAmount());
             }
         }
 
@@ -1172,21 +502,25 @@ class RecapZakatRepository extends AbstractRepository
      * @param array &$result
      * @return void
      */
-    private function fetchProgramBasedZakatDistributionForNuCareGreen(
+    private function fetchAggregationFromGrantAllocation(
         string $year,
         array $organizationList,
         array &$result
     ): void {
-        $entities = [new Organization(), new Donee(), new ZakatDistribution()];
-        $entityManager = $this->getMapper()->getEntityManager();
-        $queryBuilder = $entityManager->createQueryBuilder();
+        $entities = [
+            new Organization(), new Organizer(),
+            new Amil(), new AmilFunding()
+        ];
 
         $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
         $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
 
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+
         foreach ($organizationList as $organization) {
-            $zakatDistributionList = $queryBuilder
-                ->select($entities[2]->getQueryBuilderAlias())
+            $amilFundingList = $queryBuilder
+                ->select($entities[3]->getQueryBuilderAlias())
                 ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
                 ->join(
                     $entities[1]->getDqlName(),
@@ -1203,9 +537,19 @@ class RecapZakatRepository extends AbstractRepository
                     $entities[2]->getQueryBuilderAlias(),
                     Expr\Join::WITH,
                     sprintf(
-                        '%s.id = %s.donee',
+                        '%s.id = %s.organizer',
                         $entities[1]->getQueryBuilderAlias(),
                         $entities[2]->getQueryBuilderAlias()
+                    )
+                )
+                ->join(
+                    $entities[3]->getDqlName(),
+                    $entities[3]->getQueryBuilderAlias(),
+                    Expr\Join::WITH,
+                    sprintf(
+                        '%s.id = %s.amil',
+                        $entities[2]->getQueryBuilderAlias(),
+                        $entities[3]->getQueryBuilderAlias()
                     )
                 )
                 ->where($queryBuilder->expr()->andX(
@@ -1214,20 +558,20 @@ class RecapZakatRepository extends AbstractRepository
                         '?1'
                     ),
                     $queryBuilder->expr()->eq(
-                        sprintf('%s.program', $entities[2]->getQueryBuilderAlias()),
+                        sprintf('%s.fundingType', $entities[3]->getQueryBuilderAlias()),
                         '?2'
                     )
                 ))
-                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[2]->getQueryBuilderAlias()))
+                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[3]->getQueryBuilderAlias()))
                 ->setParameter(1, $organization->getId())
-                ->setParameter(2, ZakatDistributionType::NU_CARE_GREEN)
+                ->setParameter(2, AmilFundingType::GRANT_FUNDS)
                 ->setParameter(3, $startTz)
                 ->setParameter(4, $endTz)
                 ->getQuery()
                 ->getResult();
 
-            foreach ($zakatDistributionList as $zakatDistribution) {
-                $result['programBasedDistribution']['nuCareGreen'] += abs($zakatDistribution->getAmount());
+            foreach ($amilFundingList as $amilFunding) {
+                $result['aggregation']['grant'] += abs($amilFunding->getAmount());
             }
         }
 
@@ -1242,21 +586,22 @@ class RecapZakatRepository extends AbstractRepository
      * @param array &$result
      * @return void
      */
-    private function fetchProgramBasedZakatDistributionForNuCarePeace(
+    private function fetchDistributionForSocializationAndEducation(
         string $year,
         array $organizationList,
         array &$result
     ): void {
-        $entities = [new Organization(), new Donee(), new ZakatDistribution()];
-        $entityManager = $this->getMapper()->getEntityManager();
-        $queryBuilder = $entityManager->createQueryBuilder();
+        $entities = [new Organization(), new AmilFundingUsage()];
 
         $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
         $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
 
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+
         foreach ($organizationList as $organization) {
-            $zakatDistributionList = $queryBuilder
-                ->select($entities[2]->getQueryBuilderAlias())
+            $amilFundingDistributionList = $queryBuilder
+                ->select($entities[1]->getQueryBuilderAlias())
                 ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
                 ->join(
                     $entities[1]->getDqlName(),
@@ -1268,14 +613,65 @@ class RecapZakatRepository extends AbstractRepository
                         $entities[1]->getQueryBuilderAlias()
                     )
                 )
+                ->where($queryBuilder->expr()->andX(
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
+                        '?1'
+                    ),
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.usageType', $entities[1]->getQueryBuilderAlias()),
+                        '?2'
+                    )
+                ))
+                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[1]->getQueryBuilderAlias()))
+                ->setParameter(1, $organization->getId())
+                ->setParameter(2, AmilFundingDistributionType::SOCIAL_AND_EDUCATION_FUNDING)
+                ->setParameter(3, $startTz)
+                ->setParameter(4, $endTz)
+                ->getQuery()
+                ->getResult();
+
+            foreach ($amilFundingDistributionList as $amilFundingDistribution) {
+                $result['distribution']['socializationAndEducation'] += abs($amilFundingDistribution->getAmount());
+            }
+        }
+
+        return;
+    }
+
+    /**
+     * @internal
+     *
+     * @param string $year
+     * @param array $organizationList
+     * @param array &$result
+     * @return void
+     */
+    private function fetchDistributionForEmployeeExpense(
+        string $year,
+        array $organizationList,
+        array &$result
+    ): void {
+        $entities = [new Organization(), new AmilFundingUsage()];
+
+        $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
+        $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
+
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+
+        foreach ($organizationList as $organization) {
+            $amilFundingDistributionList = $queryBuilder
+                ->select($entities[1]->getQueryBuilderAlias())
+                ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
                 ->join(
-                    $entities[2]->getDqlName(),
-                    $entities[2]->getQueryBuilderAlias(),
+                    $entities[1]->getDqlName(),
+                    $entities[1]->getQueryBuilderAlias(),
                     Expr\Join::WITH,
                     sprintf(
-                        '%s.id = %s.donee',
-                        $entities[1]->getQueryBuilderAlias(),
-                        $entities[2]->getQueryBuilderAlias()
+                        '%s.id = %s.organization',
+                        $entities[0]->getQueryBuilderAlias(),
+                        $entities[1]->getQueryBuilderAlias()
                     )
                 )
                 ->where($queryBuilder->expr()->andX(
@@ -1284,20 +680,752 @@ class RecapZakatRepository extends AbstractRepository
                         '?1'
                     ),
                     $queryBuilder->expr()->eq(
-                        sprintf('%s.program', $entities[2]->getQueryBuilderAlias()),
+                        sprintf('%s.usageType', $entities[1]->getQueryBuilderAlias()),
                         '?2'
                     )
                 ))
-                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[2]->getQueryBuilderAlias()))
+                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[1]->getQueryBuilderAlias()))
                 ->setParameter(1, $organization->getId())
-                ->setParameter(2, ZakatDistributionType::NU_CARE_PEACE)
+                ->setParameter(2, AmilFundingDistributionType::EMPLOYEE_EXPENSES)
                 ->setParameter(3, $startTz)
                 ->setParameter(4, $endTz)
                 ->getQuery()
                 ->getResult();
 
-            foreach ($zakatDistributionList as $zakatDistribution) {
-                $result['programBasedDistribution']['nuCarePeace'] += abs($zakatDistribution->getAmount());
+            foreach ($amilFundingDistributionList as $amilFundingDistribution) {
+                $result['distribution']['employeeExpense'] += abs($amilFundingDistribution->getAmount());
+            }
+        }
+
+        return;
+    }
+
+    /**
+     * @internal
+     *
+     * @param string $year
+     * @param array $organizationList
+     * @param array &$result
+     * @return void
+     */
+    private function fetchDistributionForOfficeUtilitiesFund(
+        string $year,
+        array $organizationList,
+        array &$result
+    ): void {
+        $entities = [new Organization(), new AmilFundingUsage()];
+
+        $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
+        $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
+
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+
+        foreach ($organizationList as $organization) {
+            $amilFundingDistributionList = $queryBuilder
+                ->select($entities[1]->getQueryBuilderAlias())
+                ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
+                ->join(
+                    $entities[1]->getDqlName(),
+                    $entities[1]->getQueryBuilderAlias(),
+                    Expr\Join::WITH,
+                    sprintf(
+                        '%s.id = %s.organization',
+                        $entities[0]->getQueryBuilderAlias(),
+                        $entities[1]->getQueryBuilderAlias()
+                    )
+                )
+                ->where($queryBuilder->expr()->andX(
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
+                        '?1'
+                    ),
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.usageType', $entities[1]->getQueryBuilderAlias()),
+                        '?2'
+                    )
+                ))
+                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[1]->getQueryBuilderAlias()))
+                ->setParameter(1, $organization->getId())
+                ->setParameter(2, AmilFundingDistributionType::OFFICE_EQUIPMENT_COST)
+                ->setParameter(3, $startTz)
+                ->setParameter(4, $endTz)
+                ->getQuery()
+                ->getResult();
+
+            foreach ($amilFundingDistributionList as $amilFundingDistribution) {
+                $result['distribution']['officeUtilitiesFund'] += abs($amilFundingDistribution->getAmount());
+            }
+        }
+
+        return;
+    }
+
+    /**
+     * @internal
+     *
+     * @param string $year
+     * @param array $organizationList
+     * @param array &$result
+     * @return void
+     */
+    private function fetchDistributionForOfficeStationeryFund(
+        string $year,
+        array $organizationList,
+        array &$result
+    ): void {
+        $entities = [new Organization(), new AmilFundingUsage()];
+
+        $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
+        $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
+
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+
+        foreach ($organizationList as $organization) {
+            $amilFundingDistributionList = $queryBuilder
+                ->select($entities[1]->getQueryBuilderAlias())
+                ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
+                ->join(
+                    $entities[1]->getDqlName(),
+                    $entities[1]->getQueryBuilderAlias(),
+                    Expr\Join::WITH,
+                    sprintf(
+                        '%s.id = %s.organization',
+                        $entities[0]->getQueryBuilderAlias(),
+                        $entities[1]->getQueryBuilderAlias()
+                    )
+                )
+                ->where($queryBuilder->expr()->andX(
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
+                        '?1'
+                    ),
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.usageType', $entities[1]->getQueryBuilderAlias()),
+                        '?2'
+                    )
+                ))
+                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[1]->getQueryBuilderAlias()))
+                ->setParameter(1, $organization->getId())
+                ->setParameter(2, AmilFundingDistributionType::OFFICE_STATIONERY_COST)
+                ->setParameter(3, $startTz)
+                ->setParameter(4, $endTz)
+                ->getQuery()
+                ->getResult();
+
+            foreach ($amilFundingDistributionList as $amilFundingDistribution) {
+                $result['distribution']['officeStationeryFund'] += abs($amilFundingDistribution->getAmount());
+            }
+        }
+
+        return;
+    }
+
+    /**
+     * @internal
+     *
+     * @param string $year
+     * @param array $organizationList
+     * @param array &$result
+     * @return void
+     */
+    private function fetchDistributionForInternetFund(
+        string $year,
+        array $organizationList,
+        array &$result
+    ): void {
+        $entities = [new Organization(), new AmilFundingUsage()];
+
+        $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
+        $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
+
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+
+        foreach ($organizationList as $organization) {
+            $amilFundingDistributionList = $queryBuilder
+                ->select($entities[1]->getQueryBuilderAlias())
+                ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
+                ->join(
+                    $entities[1]->getDqlName(),
+                    $entities[1]->getQueryBuilderAlias(),
+                    Expr\Join::WITH,
+                    sprintf(
+                        '%s.id = %s.organization',
+                        $entities[0]->getQueryBuilderAlias(),
+                        $entities[1]->getQueryBuilderAlias()
+                    )
+                )
+                ->where($queryBuilder->expr()->andX(
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
+                        '?1'
+                    ),
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.usageType', $entities[1]->getQueryBuilderAlias()),
+                        '?2'
+                    )
+                ))
+                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[1]->getQueryBuilderAlias()))
+                ->setParameter(1, $organization->getId())
+                ->setParameter(2, AmilFundingDistributionType::INTERNET_COST)
+                ->setParameter(3, $startTz)
+                ->setParameter(4, $endTz)
+                ->getQuery()
+                ->getResult();
+
+            foreach ($amilFundingDistributionList as $amilFundingDistribution) {
+                $result['distribution']['internetFund'] += abs($amilFundingDistribution->getAmount());
+            }
+        }
+
+        return;
+    }
+
+    /**
+     * @internal
+     *
+     * @param string $year
+     * @param array $organizationList
+     * @param array &$result
+     * @return void
+     */
+    private function fetchDistributionForTelephoneFund(
+        string $year,
+        array $organizationList,
+        array &$result
+    ): void {
+        $entities = [new Organization(), new AmilFundingUsage()];
+
+        $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
+        $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
+
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+
+        foreach ($organizationList as $organization) {
+            $amilFundingDistributionList = $queryBuilder
+                ->select($entities[1]->getQueryBuilderAlias())
+                ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
+                ->join(
+                    $entities[1]->getDqlName(),
+                    $entities[1]->getQueryBuilderAlias(),
+                    Expr\Join::WITH,
+                    sprintf(
+                        '%s.id = %s.organization',
+                        $entities[0]->getQueryBuilderAlias(),
+                        $entities[1]->getQueryBuilderAlias()
+                    )
+                )
+                ->where($queryBuilder->expr()->andX(
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
+                        '?1'
+                    ),
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.usageType', $entities[1]->getQueryBuilderAlias()),
+                        '?2'
+                    )
+                ))
+                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[1]->getQueryBuilderAlias()))
+                ->setParameter(1, $organization->getId())
+                ->setParameter(2, AmilFundingDistributionType::PHONE_BILL_COST)
+                ->setParameter(3, $startTz)
+                ->setParameter(4, $endTz)
+                ->getQuery()
+                ->getResult();
+
+            foreach ($amilFundingDistributionList as $amilFundingDistribution) {
+                $result['distribution']['telephoneFund'] += abs($amilFundingDistribution->getAmount());
+            }
+        }
+
+        return;
+    }
+
+    /**
+     * @internal
+     *
+     * @param string $year
+     * @param array $organizationList
+     * @param array &$result
+     * @return void
+     */
+    private function fetchDistributionForElectricityFund(
+        string $year,
+        array $organizationList,
+        array &$result
+    ): void {
+        $entities = [new Organization(), new AmilFundingUsage()];
+
+        $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
+        $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
+
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+
+        foreach ($organizationList as $organization) {
+            $amilFundingDistributionList = $queryBuilder
+                ->select($entities[1]->getQueryBuilderAlias())
+                ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
+                ->join(
+                    $entities[1]->getDqlName(),
+                    $entities[1]->getQueryBuilderAlias(),
+                    Expr\Join::WITH,
+                    sprintf(
+                        '%s.id = %s.organization',
+                        $entities[0]->getQueryBuilderAlias(),
+                        $entities[1]->getQueryBuilderAlias()
+                    )
+                )
+                ->where($queryBuilder->expr()->andX(
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
+                        '?1'
+                    ),
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.usageType', $entities[1]->getQueryBuilderAlias()),
+                        '?2'
+                    )
+                ))
+                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[1]->getQueryBuilderAlias()))
+                ->setParameter(1, $organization->getId())
+                ->setParameter(2, AmilFundingDistributionType::ELECTRIC_BILL_COST)
+                ->setParameter(3, $startTz)
+                ->setParameter(4, $endTz)
+                ->getQuery()
+                ->getResult();
+
+            foreach ($amilFundingDistributionList as $amilFundingDistribution) {
+                $result['distribution']['electricityFund'] += abs($amilFundingDistribution->getAmount());
+            }
+        }
+
+        return;
+    }
+
+    /**
+     * @internal
+     *
+     * @param string $year
+     * @param array $organizationList
+     * @param array &$result
+     * @return void
+     */
+    private function fetchDistributionForTransportationFund(
+        string $year,
+        array $organizationList,
+        array &$result
+    ): void {
+        $entities = [new Organization(), new AmilFundingUsage()];
+
+        $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
+        $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
+
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+
+        foreach ($organizationList as $organization) {
+            $amilFundingDistributionList = $queryBuilder
+                ->select($entities[1]->getQueryBuilderAlias())
+                ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
+                ->join(
+                    $entities[1]->getDqlName(),
+                    $entities[1]->getQueryBuilderAlias(),
+                    Expr\Join::WITH,
+                    sprintf(
+                        '%s.id = %s.organization',
+                        $entities[0]->getQueryBuilderAlias(),
+                        $entities[1]->getQueryBuilderAlias()
+                    )
+                )
+                ->where($queryBuilder->expr()->andX(
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
+                        '?1'
+                    ),
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.usageType', $entities[1]->getQueryBuilderAlias()),
+                        '?2'
+                    )
+                ))
+                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[1]->getQueryBuilderAlias()))
+                ->setParameter(1, $organization->getId())
+                ->setParameter(2, AmilFundingDistributionType::TRANSPORTATION_COST)
+                ->setParameter(3, $startTz)
+                ->setParameter(4, $endTz)
+                ->getQuery()
+                ->getResult();
+
+            foreach ($amilFundingDistributionList as $amilFundingDistribution) {
+                $result['distribution']['transportationFund'] += abs($amilFundingDistribution->getAmount());
+            }
+        }
+
+        return;
+    }
+
+    /**
+     * @internal
+     *
+     * @param string $year
+     * @param array $organizationList
+     * @param array &$result
+     * @return void
+     */
+    private function fetchDistributionForCommunicationFund(
+        string $year,
+        array $organizationList,
+        array &$result
+    ): void {
+        $entities = [new Organization(), new AmilFundingUsage()];
+
+        $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
+        $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
+
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+
+        foreach ($organizationList as $organization) {
+            $amilFundingDistributionList = $queryBuilder
+                ->select($entities[1]->getQueryBuilderAlias())
+                ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
+                ->join(
+                    $entities[1]->getDqlName(),
+                    $entities[1]->getQueryBuilderAlias(),
+                    Expr\Join::WITH,
+                    sprintf(
+                        '%s.id = %s.organization',
+                        $entities[0]->getQueryBuilderAlias(),
+                        $entities[1]->getQueryBuilderAlias()
+                    )
+                )
+                ->where($queryBuilder->expr()->andX(
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
+                        '?1'
+                    ),
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.usageType', $entities[1]->getQueryBuilderAlias()),
+                        '?2'
+                    )
+                ))
+                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[1]->getQueryBuilderAlias()))
+                ->setParameter(1, $organization->getId())
+                ->setParameter(2, AmilFundingDistributionType::COMMUNICATION_COST)
+                ->setParameter(3, $startTz)
+                ->setParameter(4, $endTz)
+                ->getQuery()
+                ->getResult();
+
+            foreach ($amilFundingDistributionList as $amilFundingDistribution) {
+                $result['distribution']['communicationFund'] += abs($amilFundingDistribution->getAmount());
+            }
+        }
+
+        return;
+    }
+
+    /**
+     * @internal
+     *
+     * @param string $year
+     * @param array $organizationList
+     * @param array &$result
+     * @return void
+     */
+    private function fetchDistributionForOfficeUtilitiesMaintenanceFund(
+        string $year,
+        array $organizationList,
+        array &$result
+    ): void {
+        $entities = [new Organization(), new AmilFundingUsage()];
+
+        $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
+        $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
+
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+
+        foreach ($organizationList as $organization) {
+            $amilFundingDistributionList = $queryBuilder
+                ->select($entities[1]->getQueryBuilderAlias())
+                ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
+                ->join(
+                    $entities[1]->getDqlName(),
+                    $entities[1]->getQueryBuilderAlias(),
+                    Expr\Join::WITH,
+                    sprintf(
+                        '%s.id = %s.organization',
+                        $entities[0]->getQueryBuilderAlias(),
+                        $entities[1]->getQueryBuilderAlias()
+                    )
+                )
+                ->where($queryBuilder->expr()->andX(
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
+                        '?1'
+                    ),
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.usageType', $entities[1]->getQueryBuilderAlias()),
+                        '?2'
+                    )
+                ))
+                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[1]->getQueryBuilderAlias()))
+                ->setParameter(1, $organization->getId())
+                ->setParameter(2, AmilFundingDistributionType::OFFICE_ASSET_MAINTENANCE_COST)
+                ->setParameter(3, $startTz)
+                ->setParameter(4, $endTz)
+                ->getQuery()
+                ->getResult();
+
+            foreach ($amilFundingDistributionList as $amilFundingDistribution) {
+                $result['distribution']['officeUtilitiesMaintenanceFund'] += abs($amilFundingDistribution->getAmount());
+            }
+        }
+
+        return;
+    }
+
+    /**
+     * @internal
+     *
+     * @param string $year
+     * @param array $organizationList
+     * @param array &$result
+     * @return void
+     */
+    private function fetchDistributionForConsumptionFund(
+        string $year,
+        array $organizationList,
+        array &$result
+    ): void {
+        $entities = [new Organization(), new AmilFundingUsage()];
+
+        $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
+        $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
+
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+
+        foreach ($organizationList as $organization) {
+            $amilFundingDistributionList = $queryBuilder
+                ->select($entities[1]->getQueryBuilderAlias())
+                ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
+                ->join(
+                    $entities[1]->getDqlName(),
+                    $entities[1]->getQueryBuilderAlias(),
+                    Expr\Join::WITH,
+                    sprintf(
+                        '%s.id = %s.organization',
+                        $entities[0]->getQueryBuilderAlias(),
+                        $entities[1]->getQueryBuilderAlias()
+                    )
+                )
+                ->where($queryBuilder->expr()->andX(
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
+                        '?1'
+                    ),
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.usageType', $entities[1]->getQueryBuilderAlias()),
+                        '?2'
+                    )
+                ))
+                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[1]->getQueryBuilderAlias()))
+                ->setParameter(1, $organization->getId())
+                ->setParameter(2, AmilFundingDistributionType::FOOD_AND_BEVERAGE_COST)
+                ->setParameter(3, $startTz)
+                ->setParameter(4, $endTz)
+                ->getQuery()
+                ->getResult();
+
+            foreach ($amilFundingDistributionList as $amilFundingDistribution) {
+                $result['distribution']['consumptionFund'] += abs($amilFundingDistribution->getAmount());
+            }
+        }
+
+        return;
+    }
+
+    /**
+     * @internal
+     *
+     * @param string $year
+     * @param array $organizationList
+     * @param array &$result
+     * @return void
+     */
+    private function fetchDistributionForInsuranceFund(
+        string $year,
+        array $organizationList,
+        array &$result
+    ): void {
+        $entities = [new Organization(), new AmilFundingUsage()];
+
+        $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
+        $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
+
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+
+        foreach ($organizationList as $organization) {
+            $amilFundingDistributionList = $queryBuilder
+                ->select($entities[1]->getQueryBuilderAlias())
+                ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
+                ->join(
+                    $entities[1]->getDqlName(),
+                    $entities[1]->getQueryBuilderAlias(),
+                    Expr\Join::WITH,
+                    sprintf(
+                        '%s.id = %s.organization',
+                        $entities[0]->getQueryBuilderAlias(),
+                        $entities[1]->getQueryBuilderAlias()
+                    )
+                )
+                ->where($queryBuilder->expr()->andX(
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
+                        '?1'
+                    ),
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.usageType', $entities[1]->getQueryBuilderAlias()),
+                        '?2'
+                    )
+                ))
+                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[1]->getQueryBuilderAlias()))
+                ->setParameter(1, $organization->getId())
+                ->setParameter(2, AmilFundingDistributionType::INSURANCE_COST)
+                ->setParameter(3, $startTz)
+                ->setParameter(4, $endTz)
+                ->getQuery()
+                ->getResult();
+
+            foreach ($amilFundingDistributionList as $amilFundingDistribution) {
+                $result['distribution']['insuranceFund'] += abs($amilFundingDistribution->getAmount());
+            }
+        }
+
+        return;
+    }
+
+    /**
+     * @internal
+     *
+     * @param string $year
+     * @param array $organizationList
+     * @param array &$result
+     * @return void
+     */
+    private function fetchDistributionForGeneralAndAdministrationFund(
+        string $year,
+        array $organizationList,
+        array &$result
+    ): void {
+        $entities = [new Organization(), new AmilFundingUsage()];
+
+        $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
+        $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
+
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+
+        foreach ($organizationList as $organization) {
+            $amilFundingDistributionList = $queryBuilder
+                ->select($entities[1]->getQueryBuilderAlias())
+                ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
+                ->join(
+                    $entities[1]->getDqlName(),
+                    $entities[1]->getQueryBuilderAlias(),
+                    Expr\Join::WITH,
+                    sprintf(
+                        '%s.id = %s.organization',
+                        $entities[0]->getQueryBuilderAlias(),
+                        $entities[1]->getQueryBuilderAlias()
+                    )
+                )
+                ->where($queryBuilder->expr()->andX(
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
+                        '?1'
+                    ),
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.usageType', $entities[1]->getQueryBuilderAlias()),
+                        '?2'
+                    )
+                ))
+                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[1]->getQueryBuilderAlias()))
+                ->setParameter(1, $organization->getId())
+                ->setParameter(2, AmilFundingDistributionType::ADMIN_AND_COMMON_COST)
+                ->setParameter(3, $startTz)
+                ->setParameter(4, $endTz)
+                ->getQuery()
+                ->getResult();
+
+            foreach ($amilFundingDistributionList as $amilFundingDistribution) {
+                $result['distribution']['generalAndAdministrationFund'] += abs($amilFundingDistribution->getAmount());
+            }
+        }
+
+        return;
+    }
+
+    /**
+     * @internal
+     *
+     * @param string $year
+     * @param array $organizationList
+     * @param &$result
+     * @return void
+     */
+    private function fetchDistributionForDepreciationExpense(
+        string $year,
+        array $organizationList,
+        array &$result
+    ): void {
+        $entities = [new Organization(), new AmilFundingUsage()];
+
+        $startTz = new DateTimeImmutable(sprintf('%s-01-01T00:00:00', $year));
+        $endTz = new DateTimeImmutable(sprintf('%s-12-31T23:59:59', $year));
+
+        $entityManager = $this->getMapper()->getEntityManager();
+        $queryBuilder = $entityManager->createQueryBuilder();
+
+        foreach ($organizationList as $organization) {
+            $amilFundingDistributionList = $queryBuilder
+                ->select($entities[1]->getQueryBuilderAlias())
+                ->from($entities[0]->getDqlName(), $entities[0]->getQueryBuilderAlias())
+                ->join(
+                    $entities[1]->getDqlName(),
+                    $entities[1]->getQueryBuilderAlias(),
+                    Expr\Join::WITH,
+                    sprintf(
+                        '%s.id = %s.organization',
+                        $entities[0]->getQueryBuilderAlias(),
+                        $entities[1]->getQueryBuilderAlias()
+                    )
+                )
+                ->where($queryBuilder->expr()->andX(
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.id', $entities[0]->getQueryBuilderAlias()),
+                        '?1'
+                    ),
+                    $queryBuilder->expr()->eq(
+                        sprintf('%s.usageType', $entities[1]->getQueryBuilderAlias()),
+                        '?2'
+                    )
+                ))
+                ->andWhere(sprintf('%s.date BETWEEN ?3 AND ?4', $entities[1]->getQueryBuilderAlias()))
+                ->setParameter(1, $organization->getId())
+                ->setParameter(2, AmilFundingDistributionType::DEPRECIATION_EXPENSE)
+                ->setParameter(3, $startTz)
+                ->setParameter(4, $endTz)
+                ->getQuery()
+                ->getResult();
+
+            foreach ($amilFundingDistributionList as $amilFundingDistribution) {
+                $result['distribution']['depreciationExpense'] += abs($amilFundingDistribution->getAmount());
             }
         }
 
@@ -1310,14 +1438,11 @@ class RecapZakatRepository extends AbstractRepository
      * @param array &$result
      * @return void
      */
-    private function calculateTotalZakatFunding(array &$result): void
+    private function calculateFinalAmilFund(array &$result): void
     {
-        $aggregation = array_sum(array_values($result['zakatAggregation']));
-        $asnafBasedDistribution = array_sum(array_values($result['asnafBasedZakatDistribution']));
-        $programBasedDistribution = array_sum(array_values($result['programBasedDistribution']));
-        $calculatedFund = $aggregation - $asnafBasedDistribution - $programBasedDistribution;
+        $aggregation = array_sum(array_values($result['aggregation']));
+        $distribution = array_sum(array_values($result['distribution']));
 
-        $result['zakatCalculatedFund'] = $calculatedFund;
-        return;
+        $result['calculatedAmilFund'] = $aggregation - $distribution;
     }
 }
