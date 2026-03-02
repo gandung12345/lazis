@@ -27,6 +27,11 @@ class RecapAmilRepository extends AbstractRepository
 {
     use RepositoryTrait;
 
+    /**
+     * @param string $oid
+     * @param string $year
+     * @return array
+     */
     public function getRecap(string $oid, string $year): array
     {
         $organizationRepository = new OrganizationRepository(
@@ -164,7 +169,7 @@ class RecapAmilRepository extends AbstractRepository
         $result = $queryBuilder
             ->select($entity->getQueryBuilderAlias())
             ->from($entity->getDqlName(), $entity->getQueryBuilderAlias())
-            ->where($queryBuilder->expr->andX(
+            ->where($queryBuilder->expr()->andX(
                 $queryBuilder->expr()->orX(
                     $queryBuilder->expr()->eq(
                         sprintf('%s.scope', $entity->getQueryBuilderAlias()),
